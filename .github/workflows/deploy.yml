@@ -12,9 +12,11 @@ permissions:
   pages: write
   id-token: write
 
+# Allow only one concurrent Pages deployment; let in-progress deploys finish
+# (queue new ones) instead of cancelling, which avoids "deployment in progress" errors.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
