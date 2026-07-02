@@ -41,3 +41,5 @@ build/
 ### VelocityIQ demo package artifacts ###
 VelocityIQ-Demo.zip
 VelocityIQ-Demo/
+cloudflared.exe
+PUBLIC-LINK.txt

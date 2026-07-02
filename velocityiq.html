@@ -308,7 +308,7 @@
   @keyframes blink { 50% { opacity: 0.4; } }
 
   .veh-detail { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.4s ease, opacity 0.3s ease, padding 0.3s ease; padding: 0 18px; }
-  .vehicle.open .veh-detail { max-height: 460px; opacity: 1; padding: 4px 18px 18px; border-top: 1px dashed var(--line); }
+  .vehicle.open .veh-detail { max-height: 1100px; opacity: 1; padding: 4px 18px 18px; border-top: 1px dashed var(--line); }
   .timeline { list-style: none; margin: 12px 0 0; padding: 0; }
   .timeline li { display: flex; gap: 12px; padding: 8px 0; font-size: 0.86rem; }
   .tl-dot { flex: none; width: 12px; height: 12px; border-radius: 50%; margin-top: 4px; background: var(--mint); box-shadow: 0 0 0 4px var(--mint-soft); }
@@ -471,6 +471,101 @@
   .plan-head .big { font-size: clamp(2.6rem, 9vw, 4rem); font-weight: 800; letter-spacing: -2px; line-height: 1; margin: 6px 0; }
   .plan-head .big span { font-size: 1rem; color: var(--muted); font-weight: 600; letter-spacing: 0; }
 
+  /* About / Product page */
+  .about-hero { text-align: center; padding: 34px 24px; margin-bottom: 18px; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow);
+                background: radial-gradient(700px 320px at 50% -10%, rgba(2,195,154,0.20), transparent 60%), linear-gradient(180deg, var(--navy-3), var(--navy-2)); }
+  .about-hero .logo-lg { width: 66px; height: 66px; border-radius: 18px; display: grid; place-items: center; font-size: 34px; margin: 0 auto 14px;
+                         background: linear-gradient(135deg, var(--mint), var(--teal)); box-shadow: 0 16px 40px -14px var(--teal); }
+  .about-hero h1 { margin: 0 0 8px; font-size: clamp(1.8rem, 5vw, 2.6rem); letter-spacing: -1px; }
+  .about-hero p { margin: 0 auto; max-width: 62ch; color: var(--muted); font-size: 1.02rem; line-height: 1.5; }
+  .about-tags { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
+  .about-tag { font-size: 0.78rem; font-weight: 700; color: var(--mint); background: var(--mint-soft); padding: 6px 14px; border-radius: var(--radius-pill); }
+
+  .blist { list-style: none; margin: 0; padding: 0; }
+  .blist li { display: flex; gap: 11px; align-items: flex-start; padding: 9px 0; border-bottom: 1px dashed var(--line); font-size: 0.94rem; line-height: 1.5; }
+  .blist li:last-child { border-bottom: none; }
+  .blist li .bd { flex: none; margin-top: 2px; width: 20px; height: 20px; border-radius: 6px; display: grid; place-items: center;
+                  font-size: 11px; font-weight: 800; color: #04121a; background: linear-gradient(135deg, var(--mint), var(--teal)); }
+
+  .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .feature-card { border: 1px solid var(--line); border-radius: 14px; padding: 18px; background: linear-gradient(180deg, var(--navy-2), var(--navy)); }
+  .feature-card .fic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font-size: 22px; background: var(--teal-soft); margin-bottom: 12px; }
+  .feature-card h3 { margin: 0 0 8px; font-size: 1.05rem; }
+  .feature-card .blist li { padding: 5px 0; font-size: 0.86rem; border-bottom: none; }
+  .feature-card .blist li .bd { width: 16px; height: 16px; font-size: 9px; }
+
+  .steps { counter-reset: step; list-style: none; margin: 0; padding: 0; }
+  .steps li { position: relative; padding: 0 0 18px 46px; }
+  .steps li:last-child { padding-bottom: 0; }
+  .steps li::before { counter-increment: step; content: counter(step); position: absolute; left: 0; top: 0;
+                      width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; color: #04121a;
+                      background: linear-gradient(135deg, var(--mint), var(--teal)); }
+  .steps li:not(:last-child)::after { content: ""; position: absolute; left: 14px; top: 34px; bottom: 4px; width: 2px; background: var(--line); }
+  .steps li h4 { margin: 3px 0 3px; }
+  .steps li p { margin: 0; color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
+
+  @media (max-width: 900px) { .feature-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .feature-grid { grid-template-columns: 1fr; } }
+
+  /* AI prediction panel — inside Recon unit cards (scoped .aip-*) */
+  .aip-panel { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--line); }
+  .aip-panel .eyebrow { margin-bottom: 8px; }
+  .aip-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+  .aip-table td { padding: 7px 6px; font-size: 0.86rem; border-bottom: 1px solid var(--line); color: var(--muted); }
+  .aip-table td:first-child { color: var(--ink); }
+  .aip-table td:last-child { text-align: right; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .aip-table tr.aip-total td { border-top: 2px solid var(--line); border-bottom: none; padding-top: 10px; font-weight: 800; font-size: 0.92rem; }
+  .aip-table tr.aip-total td:last-child { color: var(--mint); }
+  .aip-hl { color: var(--mint); font-weight: 800; }
+  .aip-weights { display: grid; gap: 7px; margin-bottom: 12px; }
+  .aip-wrow { display: grid; grid-template-columns: 140px 1fr 42px; align-items: center; gap: 10px; font-size: 0.78rem; color: var(--muted); }
+  .aip-wbar { height: 8px; border-radius: 6px; background: rgba(156,176,206,0.16); overflow: hidden; }
+  .aip-wbar > i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--teal), var(--mint)); }
+  .aip-wrow b { text-align: right; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .aip-model { font-size: 0.74rem; color: var(--muted); font-style: italic; line-height: 1.4; }
+
+  /* Scan — AI Prediction Preview card (scoped .aipp-*) */
+  .aipp { margin: 0 0 16px; padding: 15px 16px; border-radius: 12px; border: 1px solid rgba(2,195,154,0.32); background: var(--teal-soft); }
+  .aipp-head { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--mint); font-weight: 800; margin-bottom: 8px; }
+  .aipp-range { font-size: 1.15rem; font-weight: 800; }
+  .aipp-date { color: var(--muted); font-size: 0.88rem; margin: 4px 0 12px; }
+  .aipp-date strong { color: var(--mint); }
+  .aipp-cf { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; font-size: 0.78rem; color: var(--muted); }
+  .aipp-bar { height: 9px; border-radius: 6px; background: rgba(156,176,206,0.18); overflow: hidden; }
+  .aipp-bar > i { display: block; height: 100%; width: 0; border-radius: 6px; transition: width 0.4s ease, background 0.3s ease; background: linear-gradient(90deg, var(--teal), var(--mint)); }
+  .aipp-lvl { font-weight: 800; color: var(--ink); }
+
+  /* About — How the AI works (scoped .aiw-*) + props + comparison */
+  .aiw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 6px 0 16px; }
+  .aiw-card { border: 1px solid var(--line); border-radius: 12px; padding: 16px; background: linear-gradient(180deg, var(--navy-3), var(--navy-2)); }
+  .aiw-ic { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; font-size: 20px; background: var(--mint-soft); margin-bottom: 10px; }
+  .aiw-card h4 { margin: 0 0 4px; font-size: 0.98rem; }
+  .aiw-card p { margin: 0; color: var(--muted); font-size: 0.82rem; line-height: 1.45; }
+  .aiw-wt { color: var(--mint); font-weight: 700; }
+  .aiw-formula { font-family: "Consolas", "SF Mono", Menlo, monospace; font-size: 0.9rem; color: var(--mint); background: var(--navy);
+                 border: 1px solid var(--line); border-left: 3px solid var(--mint); border-radius: 10px; padding: 14px 16px; overflow-x: auto; line-height: 1.5; }
+  .aiw-example { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: var(--mint-soft); font-size: 0.9rem; line-height: 1.5; }
+  .aiw-example strong { color: var(--mint); }
+
+  .prop { }
+  .prop-ic { width: 48px; height: 48px; border-radius: 13px; display: grid; place-items: center; font-size: 24px; color: #04121a;
+             background: linear-gradient(135deg, var(--mint), var(--teal)); margin-bottom: 12px; }
+  .prop h3 { margin: 0 0 8px; font-size: 1.1rem; }
+  .prop p { margin: 0; color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
+
+  .cmp-tbl { width: 100%; border-collapse: collapse; min-width: 520px; }
+  .cmp-tbl th, .cmp-tbl td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--line); font-size: 0.9rem; }
+  .cmp-tbl thead th { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; }
+  .cmp-tbl tbody tr:last-child td { border-bottom: none; }
+  .cmp-tbl .cmp-us { background: var(--teal-soft); color: var(--ink); font-weight: 700; }
+  .cmp-tbl thead .cmp-us { color: var(--mint); }
+
+  .ab-version { text-align: center; color: var(--muted); font-size: 0.8rem; padding: 16px; border: 1px dashed var(--line); border-radius: 12px; margin-top: 4px; }
+  .ab-built p { margin: 0; color: var(--muted); font-size: 0.94rem; line-height: 1.6; }
+
+  @media (max-width: 900px) { .aiw-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .aiw-grid { grid-template-columns: 1fr; } }
+
   /* Modal */
   .modal-backdrop { position: fixed; inset: 0; z-index: var(--z-modal); background: rgba(4,10,26,0.7); backdrop-filter: blur(4px);
                     display: none; align-items: center; justify-content: center; padding: 20px; }
@@ -613,6 +708,9 @@
           <button data-page="billing"><span class="di">💳</span> Subscription &amp; Billing</button>
         </div>
       </div>
+      <div class="nav-group nav-solo" data-tab="about">
+        <button class="nav-btn" data-page="about">About</button>
+      </div>
     </div>
 
     <button class="cmdk-btn" id="cmdkBtn" aria-label="Search"><span>🔎</span><span class="cmdk-kbd">Ctrl K</span></button>
@@ -750,6 +848,16 @@
             <button class="chip" data-work="Detail">Detail</button>
             <button class="chip" data-work="Full Recon">Full Recon</button>
             <button class="chip" data-work="Photography Only">Photography Only</button>
+          </div>
+          <div class="aipp" id="aiPreview">
+            <div class="aipp-head">⚡ AI Prediction Preview</div>
+            <div class="aipp-range" id="aippRange">—</div>
+            <div class="aipp-date">Front-line ready: <strong id="aippDate">—</strong></div>
+            <div class="aipp-cf">
+              <span>Confidence</span>
+              <div class="aipp-bar"><i id="aippBar"></i></div>
+              <span class="aipp-lvl" id="aippLevel">—</span>
+            </div>
           </div>
           <div class="lname" style="color:var(--muted); font-size:0.82rem; margin-bottom:6px;">Starting stage</div>
           <div class="chip-row" id="stageWrap" style="margin-bottom:16px;">
@@ -1018,6 +1126,115 @@
       </div>
     </section>
 
+    <!-- ============ PAGE 15: ABOUT / PRODUCT ============ -->
+    <section class="page" id="about">
+      <div class="about-hero">
+        <div class="logo-lg">⚡</div>
+        <h1>About VelocityIQ</h1>
+        <p>The AI-powered reconditioning and inventory intelligence add-on for Solera's Inventory+ platform.</p>
+        <div class="about-tags">
+          <span class="about-tag">$299 / month</span>
+          <span class="about-tag">Solera Inventory+</span>
+          <span class="about-tag">DealerSocket CRM</span>
+          <span class="about-tag">🤖 AI predictions</span>
+        </div>
+      </div>
+
+      <!-- Section 1 — What is VelocityIQ -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="eyebrow">💡 What is VelocityIQ</div>
+        <p style="margin:0; color:var(--ink); font-size:1rem; line-height:1.65;">
+          VelocityIQ is an AI-powered reconditioning and inventory intelligence add-on for Solera's Inventory+ platform.
+          It solves the three biggest money leaks in used car operations — slow recon, missed customer connections, and
+          blind daily decisions — in one <strong>$299/month</strong> subscription.
+        </p>
+      </div>
+
+      <!-- Section 2 — How the AI works -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="eyebrow">🤖 How the AI Works</div>
+        <div class="aiw-grid">
+          <div class="aiw-card">
+            <div class="aiw-ic">🔧</div><h4>Work Type Selected</h4>
+            <p>Sets the base estimate. <span class="aiw-wt">70% weight</span></p>
+          </div>
+          <div class="aiw-card">
+            <div class="aiw-ic">📊</div><h4>Vendor Historical Avg</h4>
+            <p>Adjusts up or down from base. <span class="aiw-wt">15% weight</span></p>
+          </div>
+          <div class="aiw-card">
+            <div class="aiw-ic">📦</div><h4>Vendor Queue Load</h4>
+            <p>Adds buffer if the vendor is overloaded. <span class="aiw-wt">8% weight</span></p>
+          </div>
+          <div class="aiw-card">
+            <div class="aiw-ic">🚙</div><h4>Vehicle Type &amp; Condition</h4>
+            <p>Luxury and high-mileage units take longer.</p>
+          </div>
+          <div class="aiw-card">
+            <div class="aiw-ic">🕐</div><h4>Day of Week &amp; Scan-in Time</h4>
+            <p>Weekends and off-hours add delay.</p>
+          </div>
+          <div class="aiw-card">
+            <div class="aiw-ic">🧠</div><h4>Dealership-Specific Pattern</h4>
+            <p>The model learns this dealer's actual pace over time.</p>
+          </div>
+        </div>
+        <div class="aiw-formula">Predicted Date = Base (work type) + Vendor adjustment + Queue buffer + Day offset</div>
+        <div class="aiw-example">
+          <strong>Worked example →</strong> Unit 4821 · Full Recon · Monday 10am · AutoMech assigned
+          → <strong>Predicted: Friday Jun 13 (5.8 days)</strong>
+        </div>
+      </div>
+
+      <!-- Section 3 — The three properties -->
+      <div class="grid cols-3" style="margin-bottom:16px;">
+        <div class="card prop">
+          <div class="prop-ic">🔧</div>
+          <h3>Recon Velocity</h3>
+          <p>Live 5-stage tracking with per-second floorplan cost. Cuts days out of recon so capital stops bleeding.</p>
+        </div>
+        <div class="card prop">
+          <div class="prop-ic">🤝</div>
+          <h3>Customer Match</h3>
+          <p>The moment a unit is Ready, AI matches it to real CRM shoppers. No more finished cars sitting unseen.</p>
+        </div>
+        <div class="card prop">
+          <div class="prop-ic">🧠</div>
+          <h3>GM Briefing</h3>
+          <p>A daily AI-written brief on what needs action today. Replaces blind decisions with a clear morning plan.</p>
+        </div>
+      </div>
+
+      <!-- Section 4 — Competitive edge -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="eyebrow">🏁 Competitive Edge</div>
+        <div class="tbl-wrap">
+          <table class="cmp-tbl">
+            <thead><tr><th>Feature</th><th class="cmp-us">VelocityIQ</th><th>iRecon</th></tr></thead>
+            <tbody>
+              <tr><td>Price</td><td class="cmp-us">$299/mo flat</td><td>$1,000s + per-unit fees</td></tr>
+              <tr><td>Contract</td><td class="cmp-us">Month-to-month</td><td>Annual contract</td></tr>
+              <tr><td>CRM Integration</td><td class="cmp-us">DealerSocket bridge included</td><td>Limited / paid add-on</td></tr>
+              <tr><td>Customer Match</td><td class="cmp-us">Built-in AI matching</td><td>Not available</td></tr>
+              <tr><td>GM Briefing</td><td class="cmp-us">Daily AI brief</td><td>Not available</td></tr>
+              <tr><td>Setup Time</td><td class="cmp-us">48 hours</td><td>Several weeks</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Section 5 — Built by -->
+      <div class="card ab-built" style="margin-bottom:16px;">
+        <div class="eyebrow">👤 Built By</div>
+        <p>VelocityIQ was proposed and designed by <strong style="color:var(--ink)">Vasanth</strong> as part of the
+           <strong style="color:var(--ink)">Solera Hackathon 2026</strong>. Built on Solera's Inventory+ platform using
+           the DealerSocket CRM data bridge.</p>
+      </div>
+
+      <!-- Section 6 — Version tag -->
+      <div class="ab-version">VelocityIQ v1.0 · Hackathon Demo · Solera Inventory+ · June 2026 · Not for production use</div>
+    </section>
+
   </div>
 
   <!-- ================= MODALS ================= -->
@@ -1090,13 +1307,13 @@
 
   let uid = 100;
   const units = [
-    { id: ++uid, name: "2021 Honda Accord EX-L", vin: "1HGCM82633A004352", stage: 1, days: 4, cost: 32, age: 12, vendor: "Precision Auto Detail", history: [] },
-    { id: ++uid, name: "2020 Tesla Model 3",      vin: "5YJ3E1EA7KF317654", stage: 0, days: 6, cost: 38, age: 22, vendor: "QuickLube Recon",      history: [] },
-    { id: ++uid, name: "2019 Ford F-150 XLT",     vin: "1FTFW1ET5DFC10312", stage: 2, days: 2, cost: 30, age: 8,  vendor: "ClearShot Photography", history: [] },
-    { id: ++uid, name: "2020 Chevy Equinox LT",   vin: "3GNAXUEV1LS512340", stage: 3, days: 3, cost: 28, age: 41, vendor: "In-house Pricing",     history: [] },
-    { id: ++uid, name: "2022 BMW 328i xDrive",    vin: "WBA3A5C50DF598712", stage: 4, days: 1, cost: 35, age: 6,  vendor: "—",                    history: [], price: "$34,980" },
-    { id: ++uid, name: "2021 Toyota RAV4 XLE",    vin: "JTMRFREV7HD210044", stage: 4, days: 1, cost: 30, age: 18, vendor: "—",                    history: [], price: "$29,450" },
-    { id: ++uid, name: "2022 Hyundai Tucson SEL", vin: "5NMJBCAE7NH012233", stage: 4, days: 1, cost: 27, age: 33, vendor: "—",                    history: [], price: "$27,900" }
+    { id: ++uid, name: "2021 Honda Accord EX-L", vin: "1HGCM82633A004352", stage: 1, days: 4, cost: 32, age: 12, vendor: "Precision Auto Detail", workType: "Detail", history: [] },
+    { id: ++uid, name: "2020 Tesla Model 3",      vin: "5YJ3E1EA7KF317654", stage: 0, days: 6, cost: 38, age: 22, vendor: "QuickLube Recon",      workType: "Mechanical", history: [] },
+    { id: ++uid, name: "2019 Ford F-150 XLT",     vin: "1FTFW1ET5DFC10312", stage: 2, days: 2, cost: 30, age: 8,  vendor: "ClearShot Photography", workType: "Full Recon", history: [] },
+    { id: ++uid, name: "2020 Chevy Equinox LT",   vin: "3GNAXUEV1LS512340", stage: 3, days: 3, cost: 28, age: 41, vendor: "In-house Pricing",     workType: "Full Recon", history: [] },
+    { id: ++uid, name: "2022 BMW 328i xDrive",    vin: "WBA3A5C50DF598712", stage: 4, days: 1, cost: 35, age: 6,  vendor: "—",                    workType: "Full Recon", history: [], price: "$34,980" },
+    { id: ++uid, name: "2021 Toyota RAV4 XLE",    vin: "JTMRFREV7HD210044", stage: 4, days: 1, cost: 30, age: 18, vendor: "—",                    workType: "Detail", history: [], price: "$29,450" },
+    { id: ++uid, name: "2022 Hyundai Tucson SEL", vin: "5NMJBCAE7NH012233", stage: 4, days: 1, cost: 27, age: 33, vendor: "—",                    workType: "Photography Only", history: [], price: "$27,900" }
   ];
   // seed history timelines
   function rebuildHistory(u) {
@@ -1204,7 +1421,8 @@
     matches: "match", bridge: "match", conversion: "match",
     brief: "briefing", history: "briefing",
     scorecard: "vendors",
-    floorplan: "settings", roles: "settings", billing: "settings"
+    floorplan: "settings", roles: "settings", billing: "settings",
+    about: "about"
   };
 
   function showPage(id) {
@@ -1236,8 +1454,14 @@
   // Build mobile menu from nav structure
   (function buildMobile() {
     const groups = $$(".nav-group").map(g => {
-      const title = g.querySelector(".nav-btn").childNodes[0].textContent.trim();
-      const items = $$(".dropdown button", g).map(b =>
+      const navBtn = g.querySelector(".nav-btn");
+      const title = navBtn.childNodes[0].textContent.trim();
+      const subs = $$(".dropdown button", g);
+      if (!subs.length) {
+        // solo tab (e.g. About) — the title itself navigates
+        return `<div class="mm-group"><button class="mm-sub mm-title" data-page="${navBtn.dataset.page}">${title}</button></div>`;
+      }
+      const items = subs.map(b =>
         `<button class="mm-sub" data-page="${b.dataset.page}">${b.textContent.trim()}</button>`).join("");
       return `<div class="mm-group"><div class="mm-title">${title}</div>${items}</div>`;
     }).join("");
@@ -1353,6 +1577,56 @@
   }
 
   /* ============================================================
+     AI PREDICTION MODEL — shared logic (Recon breakdown + Scan preview)
+     ============================================================ */
+  const AI_BASE   = { "Full Recon": 6, "Mechanical": 6, "Detail": 1.5, "Photography Only": 0.5 };
+  const AI_RANGE  = { "Full Recon": "5–7 days", "Mechanical": "4–8 days", "Detail": "1–2 days", "Photography Only": "same day" };
+  const AI_WEIGHTS = [
+    { label: "Work Type", pct: 70 },
+    { label: "Vendor History", pct: 15 },
+    { label: "Queue Load", pct: 8 },
+    { label: "Day + Dealer Pattern", pct: 7 }
+  ];
+  const round1 = n => Math.round(n * 10) / 10;
+  const unitWorkType = u => u.workType || "Full Recon";
+  function dayOffsetToday() {
+    const dow = new Date().getDay();       // 0 Sun .. 6 Sat
+    if (dow === 6 || dow === 0) return 1;   // weekend scan-in adds delay
+    if (dow === 5) return 0.5;              // Friday -> weekend delay
+    return 0;
+  }
+  function aiBreakdown(u) {
+    const wt = unitWorkType(u);
+    const base = AI_BASE[wt] != null ? AI_BASE[wt] : 5;
+    const vendorAdj = round1((vendorTurn(u.vendor) - 3) * 0.4);            // vendor history ±days
+    const queue = units.filter(x => x.vendor === u.vendor && x.stage < 4).length;
+    const queueBuf = queue > 2 ? round1(Math.min((queue - 2) * 0.5, 1.5)) : 0;
+    const dayOff = dayOffsetToday();
+    const total = round1(base + vendorAdj + queueBuf + dayOff);
+    const d = new Date(); d.setDate(d.getDate() + Math.round(total));
+    return { wt, base, vendorAdj, queueBuf, dayOff, total, date: d };
+  }
+  const signed = n => (n > 0 ? "+" + n : (n === 0 ? "±0" : "" + n)) + "d";
+  function aiPanelHTML(u) {
+    const b = aiBreakdown(u);
+    const weights = AI_WEIGHTS.map(w =>
+      `<div class="aip-wrow"><span>${w.label}</span><div class="aip-wbar"><i style="width:${w.pct}%"></i></div><b>${w.pct}%</b></div>`).join("");
+    return `
+      <div class="aip-panel">
+        <div class="eyebrow">🤖 How AI predicted this date</div>
+        <table class="aip-table">
+          <tr><td>Work Type — ${b.wt}</td><td>${b.base}d base</td></tr>
+          <tr><td>Vendor History — ${u.vendor}</td><td>${signed(b.vendorAdj)}</td></tr>
+          <tr><td>Queue Load buffer</td><td>${signed(b.queueBuf)}</td></tr>
+          <tr><td>Day of Week offset</td><td>${signed(b.dayOff)}</td></tr>
+          <tr class="aip-total"><td>Predicted total → <span class="aip-hl">${fmtDate(b.date)}</span></td><td>${b.total}d</td></tr>
+        </table>
+        <div class="aip-weights">${weights}</div>
+        <div class="aip-model">Model: Random Forest · Trained on this dealership's historical recon data · Updates quarterly</div>
+      </div>`;
+  }
+
+  /* ============================================================
      PAGE 3 — ALL UNITS
      ============================================================ */
   const unitList = $("#unitList");
@@ -1405,6 +1679,7 @@
               : `<span class="badge ready">🔓 Front-line ready · syndicated</span>
                  <span class="hint">Now visible in Customer Match.</span>`}
           </div>
+          ${aiPanelHTML(u)}
         </div>
       </div>`;
   }
@@ -1467,6 +1742,29 @@
     pd.textContent = fmtDate(d);
     pd.classList.remove("flash"); void pd.offsetWidth; pd.classList.add("flash");
     $("#predictedMeta").textContent = selectedWork + " · " + vName + " (" + vt + "d turn) · ~" + days + " day" + (days > 1 ? "s" : "") + " to ready";
+    updatePreview();                                      // keep the live AI preview card in sync
+  }
+  // Confidence rises with how much vendor history the model has
+  function aiConfidence(vName) {
+    if (!vName || vName === "Unassigned") return { level: "Low", pct: 34 };
+    return (VENDOR_TURN[vName] != null) ? { level: "High", pct: 88 } : { level: "Medium", pct: 62 };
+  }
+  function updatePreview() {
+    if (!$("#aippRange")) return;
+    const range = AI_RANGE[selectedWork] || "—";
+    $("#aippRange").textContent = selectedWork + " → " + range;
+    const base = AI_BASE[selectedWork] != null ? AI_BASE[selectedWork] : 5;
+    const vName = $("#scanVendor").value || "Unassigned";
+    const est = Math.max(0, Math.round(base + (vendorTurn(vName) - 3) * 0.4));  // vendor history shifts it
+    const d = new Date(); d.setDate(d.getDate() + est);
+    $("#aippDate").textContent = est === 0 ? "Today · same day" : fmtDate(d);
+    const cf = aiConfidence(vName);
+    const bar = $("#aippBar");
+    bar.style.width = cf.pct + "%";
+    bar.style.background = cf.level === "High"
+      ? "linear-gradient(90deg, var(--teal), var(--mint))"
+      : (cf.level === "Medium" ? "var(--amber)" : "var(--danger)");
+    $("#aippLevel").textContent = cf.level;
   }
   $("#workTypeWrap").addEventListener("click", function (e) {
     const c = e.target.closest(".chip"); if (!c) return;
@@ -1500,7 +1798,7 @@
   $("#addUnitBtn").addEventListener("click", function () {
     if (!scanned) return;
     const vName = $("#scanVendor").value || "Unassigned";
-    const u = { id: ++uid, name: scanned.name, vin: scanned.vin, stage: selectedStage, days: 1, cost: 26 + Math.floor(Math.random() * 14), age: 1, vendor: vName, history: [] };
+    const u = { id: ++uid, name: scanned.name, vin: scanned.vin, stage: selectedStage, days: 1, cost: 26 + Math.floor(Math.random() * 14), age: 1, vendor: vName, workType: selectedWork, history: [] };
     rebuildHistory(u);
     units.unshift(u);                                    // enters recon LOCKED
     renderUnits(); renderAssign(); renderDashboard(); refreshUsage(); persist();
@@ -1901,7 +2199,8 @@
     { t: "Vendor Scorecard", s: "Vendor Reports", page: "scorecard", ic: "🏆" },
     { t: "Floorplan Rate", s: "Settings", page: "floorplan", ic: "🧮" },
     { t: "User Roles", s: "Settings", page: "roles", ic: "👥" },
-    { t: "Subscription & Billing", s: "Settings", page: "billing", ic: "💳" }
+    { t: "Subscription & Billing", s: "Settings", page: "billing", ic: "💳" },
+    { t: "About VelocityIQ", s: "About", page: "about", ic: "📘" }
   ];
   function buildCmdkResults(q) {
     q = (q || "").toLowerCase().trim();
@@ -1991,6 +2290,16 @@
   refreshUsage();
   updatePrediction();   // reflect restored vendor list in AI estimate
   tick(); // paint tickers immediately
+
+  // Deep-link support: open the page named in the URL hash (e.g. #about)
+  (function () {
+    const initial = (location.hash || "").replace(/^#/, "");
+    if (initial && document.getElementById(initial)) showPage(initial);
+    window.addEventListener("hashchange", function () {
+      const id = (location.hash || "").replace(/^#/, "");
+      if (id && document.getElementById(id)) showPage(id);
+    });
+  })();
 
 })();
 </script>
