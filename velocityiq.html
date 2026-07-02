@@ -1,0 +1,2001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VelocityIQ — The Used Car Profit Engine</title>
+<style>
+  /* ============================================================
+     VelocityIQ — Design Tokens
+     ============================================================ */
+  :root {
+    --navy: #0D1B3E;
+    --navy-2: #122552;
+    --navy-3: #16305f;
+    --teal: #028090;
+    --mint: #02C39A;
+    --mint-soft: rgba(2, 195, 154, 0.14);
+    --teal-soft: rgba(2, 128, 144, 0.16);
+    --ink: #E8EEF7;
+    --muted: #9CB0CE;
+    --line: rgba(156, 176, 206, 0.16);
+    --danger: #FF5A6E;
+    --danger-soft: rgba(255, 90, 110, 0.16);
+    --amber: #FFB347;
+    --amber-soft: rgba(255, 179, 71, 0.16);
+    --lock-red: #FF5A6E;
+    --unlock-green: #02C39A;
+    /* Stage scale: Mechanical -> Detail -> Photos -> Pricing -> Ready */
+    --stage-0: #FF5A6E;
+    --stage-1: #FFB347;
+    --stage-2: #7AC5FF;
+    --stage-3: #028090;
+    --stage-4: #02C39A;
+    --shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.75);
+    --radius: 16px;
+    --radius-sm: 12px;
+    --radius-pill: 999px;
+    --nav-h: 62px;
+    --fade-dur: 200ms;
+    --z-nav: 50;
+    --z-dropdown: 60;
+    --z-modal: 90;
+    --z-toast: 100;
+    --maxw: 1160px;
+    --ease: cubic-bezier(.2, .9, .25, 1.15);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    font-family: "Segoe UI", Inter, system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+    background:
+      radial-gradient(1200px 700px at 82% -8%, rgba(2, 128, 144, 0.20), transparent 60%),
+      radial-gradient(1000px 600px at -6% 8%, rgba(2, 195, 154, 0.12), transparent 55%),
+      var(--navy);
+    color: var(--ink);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  /* ============================================================
+     Navigation + Dropdowns
+     ============================================================ */
+  .nav {
+    position: sticky; top: 0; z-index: var(--z-nav);
+    display: flex; align-items: center; gap: 10px;
+    height: var(--nav-h);
+    padding: 0 clamp(14px, 4vw, 40px);
+    background: rgba(13, 27, 62, 0.86);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line);
+  }
+  .brand {
+    display: flex; align-items: center; gap: 12px;
+    font-weight: 800; letter-spacing: 0.3px; font-size: 1.12rem;
+    margin-right: auto; cursor: pointer;
+  }
+  .brand .logo {
+    width: 34px; height: 34px; border-radius: 10px;
+    display: grid; place-items: center; font-size: 18px;
+    background: linear-gradient(135deg, var(--mint), var(--teal));
+    box-shadow: 0 8px 22px -8px var(--teal);
+  }
+  .brand small {
+    display: block; font-size: 0.6rem; font-weight: 600;
+    letter-spacing: 2px; color: var(--muted); text-transform: uppercase;
+  }
+
+  .nav-links { display: flex; gap: 4px; height: 100%; align-items: center; }
+  .nav-group { position: relative; height: 100%; display: flex; align-items: center; }
+  .nav-btn {
+    border: 1px solid transparent; background: transparent; color: var(--muted);
+    font: inherit; font-weight: 600; font-size: 0.9rem;
+    padding: 9px 15px; border-radius: var(--radius-pill); cursor: pointer;
+    transition: all 0.22s ease; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .nav-btn:hover { color: var(--ink); background: var(--teal-soft); }
+  .nav-group.active > .nav-btn {
+    color: #04121a; background: linear-gradient(135deg, var(--mint), var(--teal));
+    box-shadow: 0 10px 24px -12px var(--mint);
+  }
+  .nav-btn .caret-i { font-size: 0.6rem; opacity: 0.7; transition: transform 0.25s ease; }
+  .nav-group:hover .nav-btn .caret-i { transform: rotate(180deg); }
+
+  .dropdown {
+    position: absolute; top: 100%; left: 0; margin-top: 8px;
+    min-width: 236px; background: linear-gradient(180deg, var(--navy-2), var(--navy-3));
+    border: 1px solid var(--line); border-radius: 14px; padding: 8px;
+    box-shadow: var(--shadow); z-index: var(--z-dropdown);
+    opacity: 0; transform: translateY(-10px); pointer-events: none;
+    transition: opacity 0.24s ease, transform 0.24s var(--ease);
+  }
+  /* invisible hover bridge so the menu doesn't close in the gap */
+  .dropdown::before { content: ""; position: absolute; top: -12px; left: 0; right: 0; height: 12px; }
+  .nav-group:hover .dropdown,
+  .nav-group:focus-within .dropdown {
+    opacity: 1; transform: translateY(0); pointer-events: auto;
+  }
+  .dropdown button {
+    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+    border: none; background: transparent; color: var(--ink); font: inherit;
+    font-size: 0.88rem; padding: 10px 12px; border-radius: 10px; cursor: pointer;
+    transition: background 0.18s ease;
+  }
+  .dropdown button:hover { background: var(--teal-soft); }
+  .dropdown button.on { background: var(--mint-soft); color: var(--mint); font-weight: 700; }
+  .dropdown .di { width: 22px; text-align: center; }
+
+  /* Hamburger + mobile menu */
+  .hamburger {
+    display: none; border: 1px solid var(--line); background: transparent; cursor: pointer;
+    width: 42px; height: 40px; border-radius: 10px; align-items: center; justify-content: center;
+    flex-direction: column; gap: 4px;
+  }
+  .hamburger span { width: 20px; height: 2px; background: var(--ink); border-radius: 2px; transition: 0.25s ease; }
+  .hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  .hamburger.open span:nth-child(2) { opacity: 0; }
+  .hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+  .mobile-menu {
+    position: fixed; top: var(--nav-h); left: 0; right: 0; bottom: 0; z-index: 49;
+    background: rgba(13, 27, 62, 0.98); backdrop-filter: blur(10px);
+    padding: 16px clamp(16px, 5vw, 32px); overflow-y: auto;
+    transform: translateY(-8px); opacity: 0; pointer-events: none;
+    transition: opacity 0.24s ease, transform 0.24s ease;
+  }
+  .mobile-menu.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .mm-group { border-bottom: 1px solid var(--line); padding: 6px 0; }
+  .mm-title { font-weight: 800; padding: 12px 6px; font-size: 0.95rem; color: var(--mint); letter-spacing: 0.4px; }
+  .mm-sub { display: block; width: 100%; text-align: left; border: none; background: transparent; color: var(--ink);
+            font: inherit; padding: 11px 18px; border-radius: 10px; cursor: pointer; }
+  .mm-sub:hover, .mm-sub.on { background: var(--teal-soft); }
+
+  /* ============================================================
+     Layout & Cards
+     ============================================================ */
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: clamp(20px, 3vw, 34px) clamp(16px, 4vw, 40px) 70px; }
+  .page { display: none; }
+  .page.active { display: block; animation: pageFade var(--fade-dur) ease both; }
+  @keyframes pageFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .page-head { margin-bottom: 20px; }
+  .page-head h1 { margin: 0 0 4px; font-size: clamp(1.45rem, 3.2vw, 2rem); letter-spacing: -0.5px; }
+  .page-head p { margin: 0; color: var(--muted); font-size: 0.96rem; max-width: 68ch; }
+
+  .card {
+    background: linear-gradient(180deg, var(--navy-2), var(--navy));
+    border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 20px;
+  }
+  .grid { display: grid; gap: 16px; }
+  .cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .cols-2 { grid-template-columns: 1.4fr 1fr; }
+  .cols-2e { grid-template-columns: 1fr 1fr; }
+
+  .eyebrow { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: var(--mint); font-weight: 700; margin-bottom: 10px; }
+
+  .btn {
+    border: none; cursor: pointer; font: inherit; font-weight: 700;
+    padding: 11px 18px; border-radius: var(--radius-pill); color: #04121a;
+    background: linear-gradient(135deg, var(--mint), var(--teal));
+    box-shadow: 0 12px 28px -12px var(--mint);
+    transition: transform 0.2s ease, filter 0.2s ease; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn:hover { transform: translateY(-2px); filter: brightness(1.06); }
+  .btn:active { transform: translateY(0); }
+  .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); box-shadow: none; }
+  .btn.ghost:hover { background: var(--teal-soft); }
+  .btn.sm { padding: 8px 13px; font-size: 0.82rem; }
+  .btn[disabled] { opacity: 0.6; cursor: not-allowed; transform: none; filter: none; }
+
+  .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+  select, input[type="text"], input[type="number"] {
+    background: var(--navy-3); color: var(--ink); border: 1px solid var(--line);
+    border-radius: 10px; padding: 9px 12px; font: inherit; outline: none;
+  }
+  select:focus, input:focus { border-color: rgba(2,195,154,0.5); }
+  label.fld { display: block; margin-bottom: 14px; }
+  label.fld .lname { display: block; color: var(--muted); font-size: 0.82rem; margin-bottom: 6px; }
+  label.fld input, label.fld select { width: 100%; }
+
+  /* ============================================================
+     Floorplan ticker
+     ============================================================ */
+  .fp-box { text-align: right; min-width: 230px; }
+  .fp-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted);
+              display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger);
+              box-shadow: 0 0 0 0 rgba(255,90,110,0.7); animation: pulse 1.6s infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,90,110,0.6); } 70% { box-shadow: 0 0 0 10px rgba(255,90,110,0); } 100% { box-shadow: 0 0 0 0 rgba(255,90,110,0); } }
+  .fp-amount { font-size: clamp(1.9rem, 6vw, 2.9rem); font-weight: 800; letter-spacing: -1px; font-variant-numeric: tabular-nums;
+               background: linear-gradient(135deg, #fff, var(--mint)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .fp-sub { color: var(--muted); font-size: 0.82rem; }
+  .fp-strip { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+              padding: 12px 18px; border: 1px solid var(--line); border-radius: 14px;
+              background: linear-gradient(180deg, var(--navy-3), var(--navy-2)); margin-bottom: 16px; }
+  .fp-strip .fp-amount { font-size: 1.5rem; }
+  .fp-strip .fp-label { justify-content: flex-start; }
+
+  .hero { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+          background: radial-gradient(600px 300px at 90% 0%, rgba(2,195,154,0.16), transparent 60%), linear-gradient(180deg, var(--navy-3), var(--navy-2));
+          border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; margin-bottom: 16px; box-shadow: var(--shadow); }
+  .hero .lead h2 { margin: 6px 0; font-size: 1.45rem; }
+  .hero .lead p { margin: 0; color: var(--muted); max-width: 46ch; }
+
+  .stat { position: relative; overflow: hidden; }
+  .stat .value { font-size: 2.2rem; font-weight: 800; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+  .stat .delta { font-size: 0.82rem; color: var(--mint); font-weight: 600; }
+  .stat .delta.down { color: var(--amber); }
+  .stat .icon { position: absolute; top: 16px; right: 16px; width: 38px; height: 38px; border-radius: 12px;
+                display: grid; place-items: center; font-size: 18px; background: var(--mint-soft); }
+
+  .briefing ul, .feed ul { list-style: none; margin: 0; padding: 0; }
+  .briefing li { display: flex; gap: 12px; align-items: flex-start; padding: 11px 0; border-bottom: 1px dashed var(--line); font-size: 0.94rem; line-height: 1.5; }
+  .briefing li:last-child { border-bottom: none; }
+  .bullet-dot { flex: none; margin-top: 3px; width: 20px; height: 20px; border-radius: 6px; display: grid; place-items: center;
+                font-size: 11px; font-weight: 800; color: #04121a; background: linear-gradient(135deg, var(--mint), var(--teal)); }
+
+  .feed li { display: flex; gap: 12px; align-items: flex-start; padding: 11px 0; border-bottom: 1px dashed var(--line); font-size: 0.92rem; }
+  .feed li:last-child { border-bottom: none; }
+  .feed .fdot { flex: none; margin-top: 5px; width: 10px; height: 10px; border-radius: 50%; }
+  .feed .ftime { color: var(--muted); font-size: 0.76rem; margin-left: auto; white-space: nowrap; }
+  .fdot.danger { background: var(--danger); } .fdot.amber { background: var(--amber); }
+  .fdot.teal { background: var(--stage-2); } .fdot.mint { background: var(--mint); }
+
+  /* Alerts center */
+  .alert-card { display: flex; gap: 14px; align-items: flex-start; }
+  .alert-ic { flex: none; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font-size: 20px; }
+  .alert-ic.delay { background: var(--danger-soft); } .alert-ic.aging { background: var(--amber-soft); }
+  .alert-ic.pricing { background: var(--teal-soft); } .alert-ic.match { background: var(--mint-soft); }
+  .alert-body { flex: 1; min-width: 0; }
+  .alert-body h4 { margin: 0 0 4px; font-size: 1rem; }
+  .alert-body p { margin: 0; color: var(--muted); font-size: 0.88rem; }
+  .alert-tag { display: inline-block; margin-top: 8px; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.5px;
+               text-transform: uppercase; padding: 3px 9px; border-radius: var(--radius-pill); }
+  .alert-tag.delay { color: var(--danger); background: var(--danger-soft); }
+  .alert-tag.aging { color: var(--amber); background: var(--amber-soft); }
+  .alert-tag.pricing { color: var(--stage-2); background: var(--teal-soft); }
+  .alert-tag.match { color: var(--mint); background: var(--mint-soft); }
+  .alert-card.resolved { opacity: 0.55; }
+  .alert-card.resolved h4, .alert-card.resolved p { text-decoration: line-through; }
+
+  /* ============================================================
+     Recon vehicle cards
+     ============================================================ */
+  .stage-legend { display: flex; gap: 14px; flex-wrap: wrap; color: var(--muted); font-size: 0.8rem; }
+  .stage-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .dot.s0 { background: var(--stage-0); } .dot.s1 { background: var(--stage-1); }
+  .dot.s2 { background: var(--stage-2); } .dot.s3 { background: var(--stage-3); } .dot.s4 { background: var(--stage-4); }
+
+  .vehicle { border: 1px solid var(--line); border-radius: 14px; background: linear-gradient(180deg, var(--navy-2), var(--navy));
+             margin-bottom: 12px; overflow: hidden; transition: border-color 0.25s ease, box-shadow 0.25s ease; }
+  .vehicle:hover { border-color: rgba(2,195,154,0.35); }
+  .vehicle.new { animation: slideIn 0.6s var(--ease) both; }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(-16px) scale(0.98); } to { opacity: 1; transform: none; } }
+  .veh-main { display: grid; grid-template-columns: 1.5fr 2fr auto auto auto; align-items: center; gap: 16px; padding: 15px 18px; cursor: pointer; }
+  .veh-title { font-weight: 700; font-size: 1.0rem; display: flex; align-items: center; gap: 8px; }
+  .veh-vin { color: var(--muted); font-size: 0.76rem; letter-spacing: 0.4px; font-variant-numeric: tabular-nums; }
+
+  .lock { font-size: 0.9rem; cursor: help; }
+  .lock.locked { color: var(--lock-red); }
+  .lock.unlocked { color: var(--unlock-green); }
+
+  .stages { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 6px; }
+  .seg { height: 8px; border-radius: 6px; background: rgba(156,176,206,0.16); position: relative; overflow: hidden; }
+  .seg.done::after, .seg.current::after { content: ""; position: absolute; inset: 0; border-radius: 6px; transform-origin: left; animation: fill 0.7s ease both; }
+  .seg.done::after { background: linear-gradient(90deg, var(--teal), var(--mint)); }
+  .seg.current::after { background: linear-gradient(90deg, var(--mint), #7ef4d4); animation: fill 0.7s ease both, shimmer 1.8s linear infinite; background-size: 200% 100%; }
+  @keyframes fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes shimmer { to { background-position: 200% 0; } }
+  .stage-labels { display: grid; grid-template-columns: repeat(5, 1fr); font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+  .stage-labels span { text-align: center; }
+  .stage-labels span.on { color: var(--mint); font-weight: 700; }
+
+  .veh-metric { text-align: center; min-width: 62px; }
+  .veh-metric .n { font-weight: 800; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+  .veh-metric .l { color: var(--muted); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.6px; }
+  .veh-metric .n.accrue { color: var(--mint); }
+
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: var(--radius-pill); font-size: 0.7rem; font-weight: 800; white-space: nowrap; }
+  .badge.delay { color: #fff; background: var(--danger); animation: blink 1.1s steps(1) infinite; }
+  .badge.ok { color: var(--mint); background: var(--mint-soft); }
+  .badge.ready { color: #04121a; background: linear-gradient(135deg, var(--mint), var(--teal)); }
+  @keyframes blink { 50% { opacity: 0.4; } }
+
+  .veh-detail { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.4s ease, opacity 0.3s ease, padding 0.3s ease; padding: 0 18px; }
+  .vehicle.open .veh-detail { max-height: 460px; opacity: 1; padding: 4px 18px 18px; border-top: 1px dashed var(--line); }
+  .timeline { list-style: none; margin: 12px 0 0; padding: 0; }
+  .timeline li { display: flex; gap: 12px; padding: 8px 0; font-size: 0.86rem; }
+  .tl-dot { flex: none; width: 12px; height: 12px; border-radius: 50%; margin-top: 4px; background: var(--mint); box-shadow: 0 0 0 4px var(--mint-soft); }
+  .tl-dot.pending { background: var(--muted); box-shadow: 0 0 0 4px rgba(156,176,206,0.15); }
+  .tl-when { color: var(--muted); margin-left: auto; white-space: nowrap; font-size: 0.78rem; }
+
+  /* Scan VIN */
+  .viewfinder { position: relative; aspect-ratio: 16/9; border-radius: 16px; border: 2px solid var(--teal);
+                background: repeating-linear-gradient(180deg, rgba(2,128,144,0.10) 0 2px, transparent 2px 22px), var(--navy-3);
+                display: grid; place-items: center; overflow: hidden; box-shadow: inset 0 0 60px rgba(2,195,154,0.15); animation: vfpulse 2s ease-in-out infinite; }
+  @keyframes vfpulse { 0%,100% { border-color: rgba(2,128,144,0.6); } 50% { border-color: rgba(2,195,154,1); } }
+  .viewfinder .scanline { position: absolute; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, var(--mint), transparent); top: 0; animation: scan 2.4s linear infinite; }
+  @keyframes scan { 0% { top: 4%; } 50% { top: 94%; } 100% { top: 4%; } }
+  .viewfinder .corner { position: absolute; width: 34px; height: 34px; border: 3px solid var(--mint); }
+  .viewfinder .corner.tl { top: 12px; left: 12px; border-right: none; border-bottom: none; border-radius: 8px 0 0 0; }
+  .viewfinder .corner.tr { top: 12px; right: 12px; border-left: none; border-bottom: none; border-radius: 0 8px 0 0; }
+  .viewfinder .corner.bl { bottom: 12px; left: 12px; border-right: none; border-top: none; border-radius: 0 0 0 8px; }
+  .viewfinder .corner.br { bottom: 12px; right: 12px; border-left: none; border-top: none; border-radius: 0 0 8px 0; }
+  .viewfinder .vf-text { color: var(--muted); font-size: 0.9rem; z-index: 2; text-align: center; }
+  .viewfinder.captured { animation: none; border-color: var(--mint); }
+  .viewfinder.captured .scanline { display: none; }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { border: 1px solid var(--line); background: var(--navy-3); color: var(--ink); font: inherit; font-size: 0.85rem;
+          padding: 9px 14px; border-radius: var(--radius-pill); cursor: pointer; transition: 0.18s ease; }
+  .chip:hover { border-color: rgba(2,195,154,0.5); }
+  .chip.sel { background: linear-gradient(135deg, var(--mint), var(--teal)); color: #04121a; font-weight: 700; border-color: transparent; }
+  .predict-box { background: var(--mint-soft); border: 1px solid rgba(2,195,154,0.3); border-radius: 12px; padding: 14px 16px; }
+  .predict-box .pd-cap { color: var(--muted); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 1px; }
+  .predict-box .pd-date { font-size: 1.4rem; font-weight: 800; color: var(--mint); transition: transform 0.25s ease; }
+  .predict-box .pd-date.flash { animation: flashPd 0.5s ease; }
+  @keyframes flashPd { 0% { transform: scale(1); } 40% { transform: scale(1.12); color: #7ef4d4; } 100% { transform: scale(1); } }
+  .scan-success { display: none; text-align: center; padding: 18px; }
+  .scan-success.show { display: block; animation: pageFade 0.4s ease both; }
+  .success-ring { width: 68px; height: 68px; border-radius: 50%; margin: 0 auto 12px; display: grid; place-items: center;
+                  font-size: 32px; color: #04121a; background: linear-gradient(135deg, var(--mint), var(--teal)); animation: pop 0.5s var(--ease) both; }
+  @keyframes pop { 0% { transform: scale(0); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
+
+  /* Tables */
+  .tbl-wrap { overflow-x: auto; }
+  table.tbl { width: 100%; border-collapse: collapse; min-width: 560px; }
+  table.tbl th, table.tbl td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--line); font-size: 0.88rem; }
+  table.tbl thead th { color: var(--muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; }
+  table.tbl tbody tr:last-child td { border-bottom: none; }
+  .role-badge { display: inline-block; padding: 4px 11px; border-radius: var(--radius-pill); font-size: 0.72rem; font-weight: 800; }
+  .role-gm { color: #04121a; background: linear-gradient(135deg, var(--mint), var(--teal)); }
+  .role-sales-manager { color: var(--stage-2); background: var(--teal-soft); }
+  .role-recon-manager { color: var(--amber); background: var(--amber-soft); }
+  .role-salesperson { color: var(--muted); background: rgba(156,176,206,0.14); }
+  .role-bdc { color: var(--mint); background: var(--mint-soft); }
+
+  /* Customer match */
+  .warn-banner { display: flex; gap: 12px; align-items: flex-start; padding: 13px 16px; border-radius: 12px;
+                 background: var(--amber-soft); border: 1px solid rgba(255,179,71,0.35); color: var(--ink); font-size: 0.88rem; margin-bottom: 16px; }
+  .warn-banner .wi { font-size: 1.1rem; }
+  .match-card { cursor: pointer; overflow: hidden; }
+  .match-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+  .count-badge { flex: none; display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: var(--radius-pill);
+                 font-weight: 800; color: #04121a; background: linear-gradient(135deg, var(--mint), var(--teal)); }
+  .ready-tag { display: inline-block; margin-top: 8px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.4px;
+               color: var(--mint); background: var(--mint-soft); padding: 4px 10px; border-radius: var(--radius-pill); }
+  .chev { color: var(--muted); transition: transform 0.3s ease; }
+  .match-card.open .chev { transform: rotate(180deg); }
+  .panel { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.45s ease, opacity 0.35s ease, margin-top 0.35s ease; margin-top: 0; }
+  .match-card.open .panel { max-height: 720px; opacity: 1; margin-top: 14px; }
+  .customer { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 14px; border: 1px solid var(--line);
+              border-radius: 12px; background: rgba(255,255,255,0.02); margin-top: 10px; }
+  .avatar { flex: none; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; color: #04121a;
+            background: linear-gradient(135deg, var(--mint), var(--teal)); }
+  .cust-info { flex: 1; min-width: 140px; }
+  .cust-info .nm { font-weight: 700; }
+  .cust-info .sr { color: var(--muted); font-size: 0.8rem; }
+  .src-pill { display: inline-block; margin-top: 4px; font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: var(--radius-pill);
+              background: var(--teal-soft); color: var(--stage-2); }
+  .src-pill.crm { background: var(--mint-soft); color: var(--mint); }
+  .score { flex: none; text-align: center; min-width: 66px; }
+  .score .pct { font-weight: 800; font-size: 1.1rem; color: var(--mint); font-variant-numeric: tabular-nums; }
+  .score .bar { height: 5px; border-radius: 4px; background: rgba(156,176,206,0.2); margin-top: 4px; overflow: hidden; }
+  .score .bar > i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--teal), var(--mint)); }
+  .cust-actions { display: flex; gap: 8px; flex: none; }
+
+  /* CRM bridge */
+  .conn-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .conn-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 4px var(--mint-soft); }
+  .progress-track { height: 10px; border-radius: 6px; background: rgba(156,176,206,0.18); overflow: hidden; margin: 12px 0; }
+  .progress-track > i { display: block; height: 100%; width: 0; border-radius: 6px; background: linear-gradient(90deg, var(--teal), var(--mint)); transition: width 0.2s linear; }
+  .sync-log { list-style: none; margin: 0; padding: 0; font-size: 0.84rem; }
+  .sync-log li { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--line); }
+  .sync-log li:last-child { border-bottom: none; }
+  .sync-log .st { color: var(--muted); white-space: nowrap; }
+  .readonly-note { display: inline-flex; gap: 8px; align-items: center; font-size: 0.82rem; color: var(--amber);
+                   background: var(--amber-soft); padding: 8px 12px; border-radius: 10px; }
+
+  /* Charts */
+  .bars { display: flex; align-items: stretch; gap: 10px; height: 190px; }
+  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .bar-col .vl { font-size: 0.76rem; font-weight: 700; }
+  .bar-col .track { flex: 1; width: 100%; display: flex; align-items: flex-end; min-height: 0; }
+  .bar-col .fill { width: 100%; border-radius: 8px 8px 0 0; background: linear-gradient(180deg, var(--mint), var(--teal)); transition: height 1s var(--ease); }
+  .bar-col .xl { font-size: 0.7rem; color: var(--muted); }
+
+  /* Vendor scorecard */
+  .scorecard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .vcard { overflow: hidden; }
+  .vhead { display: flex; align-items: center; gap: 14px; cursor: pointer; }
+  .vscore { flex: none; width: 56px; height: 56px; border-radius: 14px; display: grid; place-items: center; font-weight: 800; font-size: 1.5rem; background: rgba(156,176,206,0.12); }
+  .vscore.good { color: var(--mint); } .vscore.mid { color: var(--amber); } .vscore.bad { color: var(--danger); }
+  .vident { flex: 1; min-width: 0; }
+  .vident .vn { font-weight: 700; }
+  .vident .vt { color: var(--muted); font-size: 0.8rem; }
+  .vtrend { display: flex; align-items: flex-end; gap: 4px; height: 34px; }
+  .vtrend i { width: 8px; border-radius: 3px 3px 0 0; background: linear-gradient(180deg, var(--mint), var(--teal)); }
+  .vmetrics { display: flex; gap: 18px; margin-top: 12px; flex-wrap: wrap; }
+  .vmetrics .vm .n { font-weight: 800; font-variant-numeric: tabular-nums; }
+  .vmetrics .vm .l { color: var(--muted); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.6px; }
+  .vdetail { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.4s ease, opacity 0.3s ease, margin-top 0.3s ease; margin-top: 0; }
+  .vcard.open .vdetail { max-height: 360px; opacity: 1; margin-top: 14px; }
+  .ai-note { display: inline-flex; gap: 8px; align-items: center; font-size: 0.8rem; color: var(--mint); background: var(--mint-soft); padding: 7px 12px; border-radius: 10px; margin-top: 12px; }
+
+  /* Settings calculator */
+  .calc-out { background: radial-gradient(500px 260px at 90% 0%, rgba(2,195,154,0.18), transparent 60%), linear-gradient(180deg, var(--navy-3), var(--navy-2)); }
+  .result-big { text-align: center; padding: 6px 0 14px; border-bottom: 1px dashed var(--line); margin-bottom: 12px; }
+  .result-big .cap { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1.5px; }
+  .result-big .money { font-size: clamp(2rem, 7vw, 3rem); font-weight: 800; letter-spacing: -1.5px; font-variant-numeric: tabular-nums;
+                       background: linear-gradient(135deg, #fff, var(--mint)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .roi-chip { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; padding: 6px 14px; border-radius: var(--radius-pill);
+              font-weight: 800; color: #04121a; background: linear-gradient(135deg, var(--mint), var(--teal)); }
+  .result-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; font-size: 0.94rem; }
+  .result-row .lab { color: var(--muted); }
+  .result-row .num { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* Briefing */
+  .brief-shell { max-width: 820px; }
+  .brief-mail { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .brief-mailhead { background: var(--navy-3); padding: 14px 18px; border-bottom: 1px solid var(--line); }
+  .brief-mailhead .mrow { display: flex; gap: 8px; font-size: 0.84rem; color: var(--muted); }
+  .brief-mailhead .mrow b { color: var(--ink); font-weight: 700; }
+  .brief-body { padding: 18px; }
+  .brief-date { color: var(--muted); font-size: 0.9rem; margin-bottom: 4px; }
+  .brief-list { list-style: none; margin: 12px 0 0; padding: 0; }
+  .brief-list li { display: flex; gap: 14px; align-items: flex-start; padding: 12px 0; border-bottom: 1px dashed var(--line); font-size: 0.98rem; line-height: 1.55; min-height: 24px; }
+  .brief-list li:last-child { border-bottom: none; }
+  .brief-num { flex: none; width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; font-weight: 800; font-size: 0.84rem; color: #04121a; background: linear-gradient(135deg, var(--mint), var(--teal)); }
+  .caret { display: inline-block; width: 2px; background: var(--mint); margin-left: 2px; animation: caretb 0.8s steps(1) infinite; height: 1.1em; vertical-align: text-bottom; }
+  @keyframes caretb { 50% { opacity: 0; } }
+  .note-chip { display: inline-flex; gap: 8px; align-items: center; font-size: 0.8rem; color: var(--mint); background: var(--mint-soft); padding: 8px 12px; border-radius: 10px; margin-top: 14px; }
+
+  .hist-row { border: 1px solid var(--line); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+  .hist-head { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; }
+  .hist-head .hd { font-weight: 700; }
+  .hist-head .hs { color: var(--muted); font-size: 0.84rem; }
+  .hist-body { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.4s ease, opacity 0.3s ease, padding 0.3s ease; padding: 0 16px; }
+  .hist-row.open .hist-body { max-height: 340px; opacity: 1; padding: 4px 16px 16px; border-top: 1px dashed var(--line); }
+  .hist-body ul { margin: 10px 0 0; padding-left: 18px; color: var(--ink); font-size: 0.9rem; line-height: 1.6; }
+
+  /* Pricing / subscription */
+  .plan-head { text-align: center; padding: 26px; margin-bottom: 16px;
+               background: radial-gradient(600px 300px at 50% -10%, rgba(2,195,154,0.16), transparent 60%), linear-gradient(180deg, var(--navy-3), var(--navy-2)); }
+  .plan-head .tag { color: var(--mint); font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; font-size: 0.74rem; }
+  .plan-head .big { font-size: clamp(2.6rem, 9vw, 4rem); font-weight: 800; letter-spacing: -2px; line-height: 1; margin: 6px 0; }
+  .plan-head .big span { font-size: 1rem; color: var(--muted); font-weight: 600; letter-spacing: 0; }
+
+  /* Modal */
+  .modal-backdrop { position: fixed; inset: 0; z-index: var(--z-modal); background: rgba(4,10,26,0.7); backdrop-filter: blur(4px);
+                    display: none; align-items: center; justify-content: center; padding: 20px; }
+  .modal-backdrop.open { display: flex; animation: pageFade 0.2s ease both; }
+  .modal { width: min(520px, 100%); background: linear-gradient(180deg, var(--navy-2), var(--navy)); border: 1px solid var(--line);
+           border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px; animation: pop 0.35s var(--ease) both; }
+  .modal h3 { margin: 0 0 4px; }
+  .modal .mclose { float: right; border: none; background: transparent; color: var(--muted); font-size: 1.3rem; cursor: pointer; }
+
+  /* Toast */
+  .toast { position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 24px);
+           background: linear-gradient(135deg, var(--mint), var(--teal)); color: #04121a; font-weight: 700; padding: 12px 20px; border-radius: 12px;
+           box-shadow: 0 18px 40px -16px rgba(0,0,0,0.6); opacity: 0; pointer-events: none; transition: all 0.35s ease; z-index: var(--z-toast); }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* Command palette (Ctrl+K) */
+  .cmdk-btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--navy-3);
+              color: var(--muted); font: inherit; font-size: 0.82rem; padding: 8px 12px; border-radius: var(--radius-pill); cursor: pointer; transition: 0.2s ease; }
+  .cmdk-btn:hover { color: var(--ink); border-color: rgba(2,195,154,0.4); }
+  .cmdk-kbd { font-size: 0.66rem; border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; letter-spacing: 0.4px; }
+  .cmdk { position: fixed; inset: 0; z-index: 95; background: rgba(4,10,26,0.6); backdrop-filter: blur(4px);
+          display: none; align-items: flex-start; justify-content: center; padding: 11vh 20px 20px; }
+  .cmdk.open { display: flex; animation: pageFade 0.18s ease both; }
+  .cmdk-box { width: min(620px, 100%); background: linear-gradient(180deg, var(--navy-2), var(--navy)); border: 1px solid var(--line);
+              border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; animation: pop 0.28s var(--ease) both; }
+  .cmdk-box > input { width: 100%; border: none; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink);
+                      font: inherit; font-size: 1.05rem; padding: 16px 18px; outline: none; }
+  .cmdk-list { max-height: 52vh; overflow-y: auto; padding: 8px; }
+  .cmdk-item { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 10px; cursor: pointer; }
+  .cmdk-item .ci-ic { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: var(--teal-soft); flex: none; }
+  .cmdk-item .ci-t { font-weight: 600; }
+  .cmdk-item .ci-s { color: var(--muted); font-size: 0.78rem; }
+  .cmdk-item .ci-k { margin-left: auto; color: var(--muted); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.6px;
+                     border: 1px solid var(--line); border-radius: 6px; padding: 2px 7px; white-space: nowrap; }
+  .cmdk-item.sel, .cmdk-item:hover { background: var(--teal-soft); }
+  .cmdk-empty { padding: 26px; text-align: center; color: var(--muted); }
+  .cmdk-foot { display: flex; gap: 16px; padding: 10px 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.72rem; }
+
+  /* Aging inventory buckets */
+  .aging-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .age-bucket { border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: linear-gradient(180deg, var(--navy-3), var(--navy-2)); }
+  .age-bucket .ab-range { color: var(--muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.6px; }
+  .age-bucket .ab-count { font-size: 1.8rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .age-bucket .ab-risk { font-size: 0.8rem; font-weight: 700; }
+  .age-bucket .ab-bar { height: 6px; border-radius: 4px; background: rgba(156,176,206,0.18); margin-top: 8px; overflow: hidden; }
+  .age-bucket .ab-bar > i { display: block; height: 100%; border-radius: 4px; transition: width 0.8s var(--ease); }
+  .age-bucket.ok .ab-bar > i { background: var(--mint); } .age-bucket.ok .ab-risk { color: var(--mint); }
+  .age-bucket.warn .ab-bar > i { background: var(--amber); } .age-bucket.warn .ab-risk { color: var(--amber); }
+  .age-bucket.bad .ab-bar > i { background: var(--danger); } .age-bucket.bad .ab-risk { color: var(--danger); }
+
+  /* Advance-stage action row */
+  .veh-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; align-items: center; }
+  .veh-actions .hint { color: var(--muted); font-size: 0.78rem; }
+
+  @media (max-width: 768px) {
+    .aging-grid { grid-template-columns: 1fr 1fr; }
+    .cmdk-kbd { display: none; }
+  }
+  @media (max-width: 375px) {
+    .aging-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ============================================================
+     Responsive — 1280 / 768 / 375
+     ============================================================ */
+  @media (max-width: 1024px) {
+    .cols-3 { grid-template-columns: 1fr 1fr; }
+    .cols-2 { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .hamburger { display: flex; }
+    .cols-2e { grid-template-columns: 1fr; }
+    .scorecard-grid { grid-template-columns: 1fr; }
+    .veh-main { grid-template-columns: 1fr 1fr; grid-template-areas: "id id" "prog prog" "days cost" "accr status"; row-gap: 12px; }
+    .veh-main .veh-id { grid-area: id; } .veh-main .progress { grid-area: prog; }
+    .veh-main .m-days { grid-area: days; } .veh-main .m-cost { grid-area: cost; }
+    .veh-main .m-accr { grid-area: accr; } .veh-main .status { grid-area: status; align-self: center; }
+  }
+  @media (max-width: 375px) {
+    .cols-3 { grid-template-columns: 1fr; }
+    .fp-box { text-align: left; } .fp-label { justify-content: flex-start; }
+    .customer { flex-direction: column; align-items: stretch; }
+    .cust-actions { flex-direction: column; }
+    .cust-actions .btn { width: 100%; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- ================= NAV ================= -->
+  <nav class="nav">
+    <div class="brand" data-page="overview">
+      <span class="logo">⚡</span>
+      <span>VelocityIQ<small>Used Car Profit Engine</small></span>
+    </div>
+
+    <div class="nav-links" id="navLinks">
+      <div class="nav-group" data-tab="dashboard">
+        <button class="nav-btn" data-page="overview">Dashboard <span class="caret-i">▾</span></button>
+        <div class="dropdown">
+          <button data-page="overview"><span class="di">📊</span> Overview</button>
+          <button data-page="alerts"><span class="di">🔔</span> Alerts Center</button>
+        </div>
+      </div>
+      <div class="nav-group" data-tab="recon">
+        <button class="nav-btn" data-page="units">Recon Tracker <span class="caret-i">▾</span></button>
+        <div class="dropdown">
+          <button data-page="units"><span class="di">🚗</span> All Units</button>
+          <button data-page="scan"><span class="di">📷</span> Scan New VIN</button>
+          <button data-page="assign"><span class="di">🏷️</span> Vendor Assignment</button>
+        </div>
+      </div>
+      <div class="nav-group" data-tab="match">
+        <button class="nav-btn" data-page="matches">Customer Match <span class="caret-i">▾</span></button>
+        <div class="dropdown">
+          <button data-page="matches"><span class="di">🤝</span> Active Matches</button>
+          <button data-page="bridge"><span class="di">🔗</span> CRM Data Bridge</button>
+          <button data-page="conversion"><span class="di">📈</span> Conversion Analytics</button>
+        </div>
+      </div>
+      <div class="nav-group" data-tab="briefing">
+        <button class="nav-btn" data-page="brief">GM Briefing <span class="caret-i">▾</span></button>
+        <div class="dropdown">
+          <button data-page="brief"><span class="di">🧠</span> Today's Brief</button>
+          <button data-page="history"><span class="di">🗂️</span> Briefing History</button>
+        </div>
+      </div>
+      <div class="nav-group" data-tab="vendors">
+        <button class="nav-btn" data-page="scorecard">Vendor Reports <span class="caret-i">▾</span></button>
+        <div class="dropdown">
+          <button data-page="scorecard"><span class="di">🏆</span> Vendor Scorecard</button>
+        </div>
+      </div>
+      <div class="nav-group" data-tab="settings">
+        <button class="nav-btn" data-page="floorplan">Settings <span class="caret-i">▾</span></button>
+        <div class="dropdown">
+          <button data-page="floorplan"><span class="di">🧮</span> Floorplan Rate</button>
+          <button data-page="roles"><span class="di">👥</span> User Roles</button>
+          <button data-page="billing"><span class="di">💳</span> Subscription &amp; Billing</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="cmdk-btn" id="cmdkBtn" aria-label="Search"><span>🔎</span><span class="cmdk-kbd">Ctrl K</span></button>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- Mobile menu -->
+  <div class="mobile-menu" id="mobileMenu"></div>
+
+  <div class="wrap">
+
+    <!-- ============ PAGE 1: DASHBOARD OVERVIEW ============ -->
+    <section class="page active" id="overview">
+      <div class="hero">
+        <div class="lead">
+          <div class="eyebrow">General Manager Overview</div>
+          <h2>Good morning, Dana 👋</h2>
+          <p>You have <strong id="heroRecon">0</strong> vehicles in reconditioning and
+             <strong id="heroMatch">0</strong> AI customer matches on front-line-ready units. Here's where the money is moving today.</p>
+        </div>
+        <div class="fp-box">
+          <div class="fp-label"><span class="live-dot"></span> Floorplan cost accruing today</div>
+          <div class="fp-amount js-fp-amount">$0.00</div>
+          <div class="fp-sub js-fp-rate">$0 / day across active recon inventory</div>
+        </div>
+      </div>
+
+      <div class="grid cols-3" style="margin-bottom:16px;">
+        <div class="card stat"><div class="icon">🔧</div><div class="eyebrow">Units in Recon</div><div class="value" id="statRecon">0</div><div class="delta down">▲ 2 vs. yesterday</div></div>
+        <div class="card stat"><div class="icon">🤝</div><div class="eyebrow">Ready-Unit Matches</div><div class="value" id="statMatch">0</div><div class="delta">▲ 3 new overnight</div></div>
+        <div class="card stat"><div class="icon">⏱️</div><div class="eyebrow">Days Saved This Month</div><div class="value">38</div><div class="delta">≈ $13,300 floorplan saved</div></div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="toolbar" style="margin-bottom:12px;">
+          <div class="eyebrow" style="margin-bottom:0;">📆 Inventory Aging &amp; Profit at Risk</div>
+          <span class="ready-tag" id="agingTotal"></span>
+        </div>
+        <div class="aging-grid" id="agingGrid"></div>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="card briefing">
+          <div class="eyebrow">🧠 AI Morning Briefing</div>
+          <ul id="dashBrief"></ul>
+        </div>
+        <div class="card feed">
+          <div class="eyebrow">⚡ Live Activity Feed</div>
+          <ul id="activityFeed"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PAGE 2: ALERTS CENTER ============ -->
+    <section class="page" id="alerts">
+      <div class="page-head">
+        <h1>Alerts Center</h1>
+        <p>Four alert types generated from live recon, aging, pricing and match signals. Acknowledge to clear from the board.</p>
+      </div>
+      <div class="grid cols-2e" id="alertsWrap"></div>
+    </section>
+
+    <!-- ============ PAGE 3: ALL UNITS ============ -->
+    <section class="page" id="units">
+      <div class="page-head">
+        <h1>Recon Tracker — All Units</h1>
+        <p>Every vehicle moving through the 5-stage line. Units in recon carry a red lock and are never syndicated; only Ready units unlock.</p>
+      </div>
+
+      <div class="fp-strip">
+        <div class="fp-label"><span class="live-dot"></span> Floorplan accruing today (recon inventory)</div>
+        <div class="fp-amount js-fp-amount">$0.00</div>
+      </div>
+
+      <div class="toolbar">
+        <div class="stage-legend">
+          <span><i class="dot s0"></i> Mechanical</span>
+          <span><i class="dot s1"></i> Detail</span>
+          <span><i class="dot s2"></i> Photos</span>
+          <span><i class="dot s3"></i> Pricing</span>
+          <span><i class="dot s4"></i> Ready</span>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <select id="filterStage" aria-label="Filter by stage">
+            <option value="all">All stages</option>
+            <option value="0">Mechanical</option>
+            <option value="1">Detail</option>
+            <option value="2">Photos</option>
+            <option value="3">Pricing</option>
+            <option value="4">Ready</option>
+          </select>
+          <select id="sortBy" aria-label="Sort units">
+            <option value="days">Sort: Days in stage</option>
+            <option value="cost">Sort: $/day</option>
+            <option value="name">Sort: Name</option>
+          </select>
+          <button class="btn sm" data-page="scan">＋ Scan VIN</button>
+        </div>
+      </div>
+
+      <div id="unitList"></div>
+    </section>
+
+    <!-- ============ PAGE 4: SCAN NEW VIN ============ -->
+    <section class="page" id="scan">
+      <div class="page-head">
+        <h1>Scan New VIN</h1>
+        <p>Capture a VIN, choose the work type, and VelocityIQ predicts the front-line-ready date instantly. New units enter recon locked.</p>
+      </div>
+
+      <div class="grid cols-2e">
+        <div class="card">
+          <div class="eyebrow">📷 VIN Viewfinder</div>
+          <div class="viewfinder" id="viewfinder">
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <span class="scanline"></span>
+            <span class="vf-text" id="vfText">Align the VIN barcode inside the frame</span>
+          </div>
+          <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+            <button class="btn" id="simulateScanBtn">📸 Simulate Scan</button>
+            <input type="text" id="scanVin" aria-label="Scanned VIN" placeholder="VIN auto-fills here" style="flex:1; min-width:180px;" readonly />
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="eyebrow">⚙️ Work Order</div>
+          <label class="fld"><span class="lname">Vehicle</span>
+            <input type="text" id="scanName" placeholder="Detected on scan" readonly />
+          </label>
+          <div class="lname" style="color:var(--muted); font-size:0.82rem; margin-bottom:6px;">Work type</div>
+          <div class="chip-row" id="workTypeWrap" style="margin-bottom:14px;">
+            <button class="chip sel" data-work="Mechanical">Mechanical</button>
+            <button class="chip" data-work="Detail">Detail</button>
+            <button class="chip" data-work="Full Recon">Full Recon</button>
+            <button class="chip" data-work="Photography Only">Photography Only</button>
+          </div>
+          <div class="lname" style="color:var(--muted); font-size:0.82rem; margin-bottom:6px;">Starting stage</div>
+          <div class="chip-row" id="stageWrap" style="margin-bottom:16px;">
+            <button class="chip sel" data-stage="0">Mechanical</button>
+            <button class="chip" data-stage="1">Detail</button>
+            <button class="chip" data-stage="2">Photos</button>
+            <button class="chip" data-stage="3">Pricing</button>
+          </div>
+          <div class="lname" style="color:var(--muted); font-size:0.82rem; margin-bottom:6px;">Assign vendor <span style="color:var(--mint)">(what-if — turnaround feeds AI model)</span></div>
+          <select id="scanVendor" aria-label="Assign vendor" style="width:100%; margin-bottom:16px;"></select>
+          <div class="predict-box">
+            <div class="pd-cap">🤖 AI predicted front-line-ready date</div>
+            <div class="pd-date" id="predictedDate">—</div>
+            <div style="color:var(--muted); font-size:0.78rem; margin-top:2px;" id="predictedMeta">Select a work type to estimate</div>
+          </div>
+          <button class="btn" id="addUnitBtn" style="width:100%; justify-content:center; margin-top:16px;" disabled>Add to Recon Line →</button>
+
+          <div class="scan-success" id="scanSuccess">
+            <div class="success-ring">✓</div>
+            <div style="font-weight:800; font-size:1.1rem;">Unit added to recon</div>
+            <div style="color:var(--muted); font-size:0.88rem; margin:4px 0 12px;" id="successMeta"></div>
+            <span class="badge ok">🔒 Locked — not syndicated while in recon</span>
+            <div style="margin-top:14px;"><button class="btn ghost sm" data-page="units">View in All Units</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PAGE 5: VENDOR ASSIGNMENT ============ -->
+    <section class="page" id="assign">
+      <div class="page-head">
+        <h1>Vendor Assignment</h1>
+        <p>Assign each in-recon unit to a vendor. Turnaround targets feed the AI prediction model used across the platform.</p>
+      </div>
+      <div class="toolbar">
+        <div class="stage-legend"><span>Reassign a vendor from any row's dropdown.</span></div>
+        <button class="btn sm" id="addVendorBtn">＋ Add Vendor</button>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>Unit</th><th>Stage</th><th>Assigned vendor</th><th>AI ready</th><th>Reassign</th></tr></thead>
+            <tbody id="assignBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PAGE 6: ACTIVE MATCHES ============ -->
+    <section class="page" id="matches">
+      <div class="page-head">
+        <h1>Customer Match — Active Matches</h1>
+        <p>Only front-line-ready units appear here. In-recon vehicles are never surfaced to buyers or matched.</p>
+      </div>
+      <div class="warn-banner">
+        <span class="wi">🔒</span>
+        <div><strong>Internal use only.</strong> Customer data is sourced from DealerSocket CRM and third-party listing sites (AutoTrader, Cars.com). Buyers have no login or access point in this platform.</div>
+      </div>
+      <div class="grid" id="matchList"></div>
+    </section>
+
+    <!-- ============ PAGE 7: CRM DATA BRIDGE ============ -->
+    <section class="page" id="bridge">
+      <div class="page-head">
+        <h1>CRM Data Bridge Status</h1>
+        <p>Read-only bridge to DealerSocket. VelocityIQ ingests shopper signals for matching — it never exposes buyer records externally.</p>
+      </div>
+      <div class="grid cols-2">
+        <div class="card">
+          <div class="eyebrow">🔗 Connection</div>
+          <div class="conn-row"><span class="conn-dot"></span><div><strong>DealerSocket CRM</strong><div style="color:var(--muted); font-size:0.84rem;">Connected · last sync <span id="lastSync">just now</span></div></div></div>
+          <div class="grid cols-3" style="margin:14px 0;">
+            <div><div style="font-weight:800; font-size:1.4rem;" id="recLeads">3,412</div><div style="color:var(--muted); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.6px;">CRM leads</div></div>
+            <div><div style="font-weight:800; font-size:1.4rem;" id="recListings">1,190</div><div style="color:var(--muted); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.6px;">3rd-party listings</div></div>
+            <div><div style="font-weight:800; font-size:1.4rem;" id="recMatches">7</div><div style="color:var(--muted); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.6px;">Active matches</div></div>
+          </div>
+          <div class="readonly-note">🔐 Read-only bridge · internal use only · buyers have no login</div>
+          <div class="progress-track"><i id="syncProgress"></i></div>
+          <button class="btn" id="forceSyncBtn">⟳ Force Sync</button>
+        </div>
+        <div class="card">
+          <div class="eyebrow">📝 Sync Event Log</div>
+          <ul class="sync-log" id="syncLog"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PAGE 8: CONVERSION ANALYTICS ============ -->
+    <section class="page" id="conversion">
+      <div class="page-head">
+        <h1>Conversion Analytics</h1>
+        <p>How CRM-sourced matches convert to sold units across the last 7 days.</p>
+      </div>
+      <div class="grid cols-2">
+        <div class="card">
+          <div class="eyebrow">📈 Matches → Sold (last 7 days)</div>
+          <div class="bars" id="convBars"></div>
+        </div>
+        <div class="card">
+          <div class="eyebrow">🎯 Match Results</div>
+          <div class="toolbar" style="margin-bottom:12px;">
+            <select id="convOutcome" aria-label="Filter by outcome">
+              <option value="all">All outcomes</option>
+              <option value="Sold">Sold</option>
+              <option value="Appointment">Appointment</option>
+              <option value="Contacted">Contacted</option>
+              <option value="No answer">No answer</option>
+            </select>
+            <select id="convSource" aria-label="Filter by source">
+              <option value="all">All sources</option>
+              <option value="CRM">CRM</option>
+              <option value="AutoTrader">AutoTrader</option>
+              <option value="Cars.com">Cars.com</option>
+            </select>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Unit</th><th>Customer</th><th>Source</th><th>Outcome</th></tr></thead>
+              <tbody id="convBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PAGE 9: TODAY'S BRIEF ============ -->
+    <section class="page" id="brief">
+      <div class="page-head">
+        <h1>GM Briefing — Today's Brief</h1>
+        <p>Your AI analyst drafts a morning summary from Inventory+ data only. Regenerate to retype a fresh set.</p>
+      </div>
+      <div class="card brief-shell">
+        <div class="brief-mail">
+          <div class="brief-mailhead">
+            <div class="mrow"><span>To:</span> <b>Dana Whitfield · GM</b></div>
+            <div class="mrow"><span>From:</span> <b>VelocityIQ Analyst</b></div>
+            <div class="mrow"><span>Subject:</span> <b>Your VelocityIQ Morning Brief</b></div>
+          </div>
+          <div class="brief-body">
+            <div class="brief-date" id="briefDate"></div>
+            <ul class="brief-list" id="briefList"></ul>
+            <div class="note-chip">ℹ️ Generated from Inventory+ data only — no customer data included.</div>
+          </div>
+        </div>
+        <div style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn" id="regenBtn">✨ Regenerate</button>
+          <button class="btn ghost" id="sendEmailBtn">✉️ Send to Email</button>
+          <button class="btn ghost" id="sendSmsBtn">💬 Send as SMS</button>
+          <button class="btn ghost" id="copyBriefBtn">📋 Copy</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PAGE 10: BRIEFING HISTORY ============ -->
+    <section class="page" id="history">
+      <div class="page-head">
+        <h1>Briefing History</h1>
+        <p>Every past brief, searchable. Click a row to expand the full text inline.</p>
+      </div>
+      <div class="toolbar">
+        <input type="text" id="historySearch" aria-label="Search briefings" placeholder="🔎 Search briefings…" style="min-width:260px;" />
+        <span class="ready-tag" id="histCount"></span>
+      </div>
+      <div id="historyWrap"></div>
+    </section>
+
+    <!-- ============ PAGE 11: VENDOR SCORECARD ============ -->
+    <section class="page" id="scorecard">
+      <div class="page-head">
+        <h1>Vendor Scorecard</h1>
+        <p>Auto-generated monthly from recon stage timings. Scores are green (8+), amber (6–7) or red (below 6).</p>
+      </div>
+      <div class="toolbar">
+        <div class="stage-legend">
+          <span><i class="dot s4"></i> On / ahead of target</span>
+          <span><i class="dot s1"></i> Watch</span>
+          <span><i class="dot s0"></i> Over target</span>
+        </div>
+        <span class="ready-tag">📅 June 2026 · auto-generated</span>
+      </div>
+      <div class="scorecard-grid" id="scorecardWrap"></div>
+    </section>
+
+    <!-- ============ PAGE 12: FLOORPLAN RATE ============ -->
+    <section class="page" id="floorplan">
+      <div class="page-head">
+        <h1>Settings — Floorplan Rate</h1>
+        <p>Enter your store's numbers. The calculator updates instantly — and feeds the savings figure shown if you ever try to cancel.</p>
+      </div>
+      <div class="grid cols-2e">
+        <div class="card">
+          <div class="eyebrow">Your dealership</div>
+          <label class="fld"><span class="lname">Floorplan cost / day ($ per unit)</span>
+            <input type="number" id="inRate" value="35" min="10" max="120" /></label>
+          <label class="fld"><span class="lname">Used units per month</span>
+            <input type="number" id="inUnits" value="50" min="5" max="500" /></label>
+          <label class="fld"><span class="lname">Days VelocityIQ saves per unit (target)</span>
+            <input type="number" id="inSaved" value="7" min="1" max="20" /></label>
+          <div style="color:var(--muted); font-size:0.8rem;">Subscription is a flat <strong style="color:var(--ink)">$299/mo</strong> per rooftop.</div>
+        </div>
+        <div class="card calc-out">
+          <div class="result-big">
+            <div class="cap">Projected savings per month</div>
+            <div class="money" id="outMonthly">$0</div>
+            <div class="roi-chip" id="outRoi">0× annual ROI</div>
+          </div>
+          <div class="result-row"><span class="lab">Monthly floorplan recovered</span><span class="num" id="outRecovered">$0</span></div>
+          <div class="result-row"><span class="lab">Annualized savings</span><span class="num" id="outAnnual">$0</span></div>
+          <div class="result-row"><span class="lab">VelocityIQ subscription / yr</span><span class="num" style="color:var(--muted)">− $3,588</span></div>
+          <div class="result-row" style="border-top:1px dashed var(--line); margin-top:6px; padding-top:14px;">
+            <span class="lab" style="color:var(--ink); font-weight:700;">Net annual gain</span>
+            <span class="num" style="color:var(--mint); font-size:1.15rem;" id="outNet">$0</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PAGE 13: USER ROLES ============ -->
+    <section class="page" id="roles">
+      <div class="page-head">
+        <h1>Settings — User Roles</h1>
+        <p>Assign staff roles. Change a role from the dropdown to update access instantly.</p>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>Staff member</th><th>Role</th><th>Change role</th></tr></thead>
+            <tbody id="rolesBody"></tbody>
+          </table>
+        </div>
+        <div style="margin-top:14px; color:var(--muted); font-size:0.84rem;">
+          🔒 Salespeople have restricted access: they can view front-line-ready matches only and cannot see floorplan cost, vendor scorecards, or in-recon inventory. Buyers are never granted any login.
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PAGE 14: SUBSCRIPTION & BILLING ============ -->
+    <section class="page" id="billing">
+      <div class="page-head">
+        <h1>Settings — Subscription &amp; Billing</h1>
+        <p>Month-to-month. Built to pay for itself many times over.</p>
+      </div>
+      <div class="card plan-head">
+        <div class="tag">VelocityIQ · per rooftop</div>
+        <div class="big">$299<span>/month</span></div>
+        <div style="color:var(--muted)">Month-to-month · no contract · 48-hour setup</div>
+      </div>
+      <div class="grid cols-2">
+        <div class="card">
+          <div class="eyebrow">📦 Plan &amp; Usage This Cycle</div>
+          <div class="result-row"><span class="lab">Units scanned</span><span class="num" id="usageUnits">—</span></div>
+          <div class="result-row"><span class="lab">Active matches</span><span class="num" id="usageMatches">—</span></div>
+          <div class="result-row"><span class="lab">Briefings generated</span><span class="num">31</span></div>
+          <div class="result-row"><span class="lab">Next invoice</span><span class="num">Jul 15, 2026 · $299</span></div>
+        </div>
+        <div class="card">
+          <div class="eyebrow">⚙️ Manage</div>
+          <p style="color:var(--muted); font-size:0.9rem;">Update payment, download invoices, or manage your subscription below.</p>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+            <button class="btn ghost sm">Update payment</button>
+            <button class="btn ghost sm">Download invoices</button>
+            <button class="btn ghost sm" id="resetDemoBtn">↺ Reset demo data</button>
+            <button class="btn ghost sm" id="cancelBtn" style="color:var(--danger); border-color:rgba(255,90,110,0.4);">Cancel subscription</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ================= MODALS ================= -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <!-- Add vendor -->
+    <div class="modal" id="addVendorModal" style="display:none;">
+      <button class="mclose" data-close>×</button>
+      <h3>Add Vendor</h3>
+      <p style="color:var(--muted); font-size:0.88rem; margin-top:2px;">New vendors become available for assignment immediately.</p>
+      <label class="fld" style="margin-top:14px;"><span class="lname">Vendor name</span><input type="text" id="nvName" placeholder="e.g. Apex Detailing" /></label>
+      <label class="fld"><span class="lname">Category</span>
+        <select id="nvType"><option>Mechanical</option><option>Detail</option><option>Photography</option><option>Body / Paint</option></select></label>
+      <label class="fld"><span class="lname">Typical turnaround (days) — <span style="color:var(--mint)">feeds AI prediction model</span></span>
+        <input type="number" id="nvDays" value="2" min="1" max="14" /></label>
+      <button class="btn" id="saveVendorBtn" style="width:100%; justify-content:center; margin-top:6px;">Save Vendor</button>
+    </div>
+    <!-- Retention -->
+    <div class="modal" id="retentionModal" style="display:none;">
+      <button class="mclose" data-close>×</button>
+      <h3>Before you go…</h3>
+      <p style="color:var(--muted); font-size:0.9rem; margin-top:2px;">Based on your own Floorplan Rate settings, here's what VelocityIQ is putting back in your pocket:</p>
+      <div class="result-big" style="border:none; margin:14px 0 6px;">
+        <div class="cap">Your projected savings</div>
+        <div class="money" id="retentionSavings">$0</div>
+        <div class="roi-chip" id="retentionRoi">per month</div>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;">
+        <button class="btn" id="keepBtn" style="flex:1; justify-content:center;">Keep my savings</button>
+        <button class="btn ghost" id="confirmCancelBtn" style="flex:1; justify-content:center; color:var(--danger); border-color:rgba(255,90,110,0.4);">Cancel anyway</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= COMMAND PALETTE ================= -->
+  <div class="cmdk" id="cmdk" aria-hidden="true">
+    <div class="cmdk-box" role="dialog" aria-label="Search VelocityIQ">
+      <input type="text" id="cmdkInput" autocomplete="off" spellcheck="false" placeholder="Search pages, units, customers…" aria-label="Search" />
+      <div class="cmdk-list" id="cmdkList"></div>
+      <div class="cmdk-foot"><span>↑↓ navigate</span><span>↵ open</span><span>esc close</span></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   VelocityIQ — Interactive Demo Logic (single file, offline)
+   ============================================================ */
+(function () {
+  "use strict";
+  const $  = (s, c) => (c || document).querySelector(s);
+  const $$ = (s, c) => Array.prototype.slice.call((c || document).querySelectorAll(s));
+
+  /* ---------- Toast ---------- */
+  const toastEl = $("#toast");
+  let toastTimer;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2600);
+  }
+
+  /* ============================================================
+     SHARED STORE — single source of truth
+     ============================================================ */
+  const STAGES = ["Mechanical", "Detail", "Photos", "Pricing", "Ready"];
+  const STAGE_AVG = [4, 3, 2, 2, 0];  // day thresholds per stage (Ready = n/a)
+  const WORK_TYPE_DAYS = { "Mechanical": 3, "Detail": 2, "Full Recon": 7, "Photography Only": 1 };
+
+  let uid = 100;
+  const units = [
+    { id: ++uid, name: "2021 Honda Accord EX-L", vin: "1HGCM82633A004352", stage: 1, days: 4, cost: 32, age: 12, vendor: "Precision Auto Detail", history: [] },
+    { id: ++uid, name: "2020 Tesla Model 3",      vin: "5YJ3E1EA7KF317654", stage: 0, days: 6, cost: 38, age: 22, vendor: "QuickLube Recon",      history: [] },
+    { id: ++uid, name: "2019 Ford F-150 XLT",     vin: "1FTFW1ET5DFC10312", stage: 2, days: 2, cost: 30, age: 8,  vendor: "ClearShot Photography", history: [] },
+    { id: ++uid, name: "2020 Chevy Equinox LT",   vin: "3GNAXUEV1LS512340", stage: 3, days: 3, cost: 28, age: 41, vendor: "In-house Pricing",     history: [] },
+    { id: ++uid, name: "2022 BMW 328i xDrive",    vin: "WBA3A5C50DF598712", stage: 4, days: 1, cost: 35, age: 6,  vendor: "—",                    history: [], price: "$34,980" },
+    { id: ++uid, name: "2021 Toyota RAV4 XLE",    vin: "JTMRFREV7HD210044", stage: 4, days: 1, cost: 30, age: 18, vendor: "—",                    history: [], price: "$29,450" },
+    { id: ++uid, name: "2022 Hyundai Tucson SEL", vin: "5NMJBCAE7NH012233", stage: 4, days: 1, cost: 27, age: 33, vendor: "—",                    history: [], price: "$27,900" }
+  ];
+  // seed history timelines
+  function rebuildHistory(u) {
+    const done = ["Acquired at auction", "Mechanical inspection complete", "Detail complete", "Photos uploaded", "Priced & front-line ready"];
+    u.history = STAGES.map((s, i) => ({
+      stage: s,
+      state: i < u.stage ? "done" : (i === u.stage ? "current" : "pending"),
+      note: i < u.stage ? done[i] : (i === u.stage ? "In progress now" : "Awaiting"),
+      when: i < u.stage ? (u.stage - i) + "d ago" : (i === u.stage ? "now" : "—")
+    }));
+  }
+  units.forEach(rebuildHistory);
+
+  const isRecon = u => u.stage < 4;
+  const isReady = u => u.stage === 4;
+  const isDelayed = u => isRecon(u) && u.days > STAGE_AVG[u.stage];
+  function reconDailyRate() { return units.filter(isRecon).reduce((a, u) => a + u.cost, 0); }
+
+  const customersByUnit = {
+    "2022 BMW 328i xDrive": [
+      { n: "Sarah Mitchell",  s: 96, src: "CRM",        q: "BMW 3-Series, under $40k, AWD",     act: "2h ago" },
+      { n: "James Rodriguez", s: 89, src: "AutoTrader", q: "Luxury sedan, low miles, certified", act: "1d ago" },
+      { n: "Emily Chen",      s: 84, src: "Cars.com",   q: "White BMW, leather, sunroof",        act: "3d ago" }
+    ],
+    "2021 Toyota RAV4 XLE": [
+      { n: "Michael Brown", s: 92, src: "CRM",        q: "Toyota RAV4 XLE, AWD, under 40k mi", act: "5h ago" },
+      { n: "Lisa Wang",     s: 87, src: "AutoTrader", q: "Reliable SUV, under $32k",           act: "2d ago" }
+    ],
+    "2022 Hyundai Tucson SEL": [
+      { n: "David Johnson", s: 91, src: "CRM",        q: "Hyundai Tucson SEL, warranty",   act: "4h ago" },
+      { n: "Robert Taylor", s: 85, src: "Cars.com",   q: "Compact SUV, backup camera",     act: "1d ago" },
+      { n: "Amanda White",  s: 80, src: "AutoTrader", q: "Grey SUV, apple carplay",        act: "4d ago" }
+    ]
+  };
+
+  let vendorNames = ["Precision Auto Detail", "ClearShot Photography", "QuickLube Recon", "MidState Body Shop", "In-house Pricing", "In-house Mechanical"];
+
+  // Vendor turnaround days — feeds the AI prediction model
+  const VENDOR_TURN = {
+    "Precision Auto Detail": 2, "ClearShot Photography": 1, "QuickLube Recon": 6,
+    "MidState Body Shop": 5, "In-house Pricing": 2, "In-house Mechanical": 3, "Unassigned": 3, "—": 2
+  };
+  const vendorTurn = v => (VENDOR_TURN[v] != null ? VENDOR_TURN[v] : 3);
+
+  // Synthetic CRM/marketplace matches for any Ready unit without a scripted list
+  const matchPool = [
+    { n: "Chris Bennett", src: "CRM",        q: "reliable, low miles, under budget" },
+    { n: "Dana Kim",      src: "AutoTrader", q: "clean history, certified pre-owned" },
+    { n: "Omar Haddad",   src: "Cars.com",   q: "family SUV, backup camera, warranty" },
+    { n: "Rachel Stone",  src: "CRM",        q: "low payment, good on gas" },
+    { n: "Victor Nunez",  src: "AutoTrader", q: "AWD, cold-weather package" },
+    { n: "Grace Liu",     src: "Cars.com",   q: "one owner, service records" }
+  ];
+  const genCache = {};
+  function getCustomers(u) {
+    if (customersByUnit[u.name]) return customersByUnit[u.name];
+    if (genCache[u.id]) return genCache[u.id];
+    const count = (u.id % 3) + 1;
+    const arr = [];
+    for (let i = 0; i < count; i++) {
+      const p = matchPool[(u.id + i) % matchPool.length];
+      arr.push({ n: p.n, s: Math.max(72, 95 - i * 5 - (u.id % 4)), src: p.src, q: p.q, act: (i + 1) + "d ago" });
+    }
+    genCache[u.id] = arr;
+    return arr;
+  }
+
+  // Acknowledged alerts (persisted)
+  let ackedAlerts = new Set();
+
+  /* ---------- localStorage persistence ---------- */
+  const PERSIST_KEY = "velocityiq_state_v1";
+  function persist() {
+    try {
+      localStorage.setItem(PERSIST_KEY, JSON.stringify({
+        uid: uid, units: units, vendorNames: vendorNames, vendorTurn: VENDOR_TURN, staff: staff,
+        acked: Array.from(ackedAlerts),
+        calc: { rate: $("#inRate").value, units: $("#inUnits").value, saved: $("#inSaved").value }
+      }));
+    } catch (e) { /* storage unavailable — demo still works in-memory */ }
+  }
+  function loadState() {
+    let raw; try { raw = localStorage.getItem(PERSIST_KEY); } catch (e) { return; }
+    if (!raw) return;
+    let s; try { s = JSON.parse(raw); } catch (e) { return; }
+    if (typeof s.uid === "number") uid = s.uid;
+    if (Array.isArray(s.units)) { units.length = 0; s.units.forEach(u => units.push(u)); }
+    if (Array.isArray(s.vendorNames)) { vendorNames.length = 0; s.vendorNames.forEach(v => vendorNames.push(v)); }
+    if (s.vendorTurn) Object.keys(s.vendorTurn).forEach(k => { VENDOR_TURN[k] = s.vendorTurn[k]; });
+    if (Array.isArray(s.staff)) { staff.length = 0; s.staff.forEach(m => staff.push(m)); }
+    if (Array.isArray(s.acked)) ackedAlerts = new Set(s.acked);
+    if (s.calc) { $("#inRate").value = s.calc.rate; $("#inUnits").value = s.calc.units; $("#inSaved").value = s.calc.saved; }
+  }
+  function resetDemo() {
+    try { localStorage.removeItem(PERSIST_KEY); } catch (e) {}
+    location.reload();
+  }
+
+  /* ============================================================
+     ROUTER — nav, dropdowns, hamburger, 200ms fade
+     ============================================================ */
+  const pageToTab = {
+    overview: "dashboard", alerts: "dashboard",
+    units: "recon", scan: "recon", assign: "recon",
+    matches: "match", bridge: "match", conversion: "match",
+    brief: "briefing", history: "briefing",
+    scorecard: "vendors",
+    floorplan: "settings", roles: "settings", billing: "settings"
+  };
+
+  function showPage(id) {
+    if (!document.getElementById(id)) id = "overview";
+    $$(".page").forEach(p => p.classList.toggle("active", p.id === id));
+    const tab = pageToTab[id];
+    $$(".nav-group").forEach(g => g.classList.toggle("active", g.dataset.tab === tab));
+    $$(".dropdown button, .mm-sub").forEach(b => b.classList.toggle("on", b.dataset.page === id));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    closeMobile();
+    if (id === "conversion") playConvChart();
+    if (id === "scorecard") playVendorTrends();
+    if (id === "billing") refreshUsage();
+  }
+
+  document.addEventListener("click", function (e) {
+    const nav = e.target.closest("[data-page]");
+    if (nav) { showPage(nav.dataset.page); }
+  });
+
+  /* Hamburger + mobile menu */
+  const hamburger = $("#hamburger");
+  const mobileMenu = $("#mobileMenu");
+  function closeMobile() { hamburger.classList.remove("open"); mobileMenu.classList.remove("open"); }
+  hamburger.addEventListener("click", function () {
+    const open = hamburger.classList.toggle("open");
+    mobileMenu.classList.toggle("open", open);
+  });
+  // Build mobile menu from nav structure
+  (function buildMobile() {
+    const groups = $$(".nav-group").map(g => {
+      const title = g.querySelector(".nav-btn").childNodes[0].textContent.trim();
+      const items = $$(".dropdown button", g).map(b =>
+        `<button class="mm-sub" data-page="${b.dataset.page}">${b.textContent.trim()}</button>`).join("");
+      return `<div class="mm-group"><div class="mm-title">${title}</div>${items}</div>`;
+    }).join("");
+    mobileMenu.innerHTML = groups;
+  })();
+
+  /* ============================================================
+     TICKERS — one interval; runs on every page simultaneously
+     ============================================================ */
+  const now = new Date();
+  let secondsToday = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+  const money2 = n => "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const money0 = n => "$" + Math.round(n).toLocaleString("en-US");
+
+  function updateFpRateLabels() {
+    $$(".js-fp-rate").forEach(el => el.textContent = "$" + reconDailyRate() + " / day across active recon inventory");
+  }
+  function tick() {
+    secondsToday = (secondsToday + 1) % 86400;
+    const frac = secondsToday / 86400;
+    const rate = reconDailyRate();
+    $$(".js-fp-amount").forEach(el => el.textContent = money2(rate * frac));
+    $$(".js-unit-accrued").forEach(el => el.textContent = money2((+el.dataset.rate) * frac));
+  }
+  setInterval(tick, 1000);
+
+  /* ============================================================
+     PAGE 1 — DASHBOARD OVERVIEW
+     ============================================================ */
+  const morningBriefing = [
+    "4 units in recon are exceeding their stage average and need a nudge today.",
+    "Floorplan is carrying $" + reconDailyRate() + "/day; clearing the Detail bottleneck saves ~$96/day.",
+    "3 front-line-ready units have fresh CRM customer matches worth a same-day call.",
+    "Mechanical bay is today's bottleneck — the Tesla Model 3 has sat 6 days.",
+    "2 units flagged DELAY are dragging your average cycle up by 1.3 days."
+  ];
+  const activity = [
+    { d: "danger", t: "DELAY flagged — 2020 Tesla Model 3 stuck in Mechanical (6d)", time: "2m" },
+    { d: "mint",   t: "2022 BMW 328i xDrive reached Ready — 3 CRM matches fired", time: "18m" },
+    { d: "teal",   t: "ClearShot Photography completed 2019 Ford F-150 photos", time: "41m" },
+    { d: "amber",  t: "Aging alert — 2020 Chevy Equinox approaching 45 days in stock", time: "1h" },
+    { d: "mint",   t: "New VIN scanned into recon line — locked, not syndicated", time: "2h" }
+  ];
+  function renderDashboard() {
+    $("#heroRecon").textContent = units.filter(isRecon).length;
+    const matchCount = units.filter(isReady).length;
+    $("#heroMatch").textContent = matchCount;
+    $("#statRecon").textContent = units.filter(isRecon).length;
+    $("#statMatch").textContent = matchCount;
+    $("#dashBrief").innerHTML = morningBriefing.map(t => `<li><span class="bullet-dot">✓</span><span>${t}</span></li>`).join("");
+    $("#activityFeed").innerHTML = activity.map(a =>
+      `<li><span class="fdot ${a.d}"></span><span>${a.t}</span><span class="ftime">${a.time}</span></li>`).join("");
+    renderAging();
+    updateFpRateLabels();
+  }
+
+  const AGE_BUCKETS = [
+    { label: "0–15 days", min: 0, max: 15, cls: "ok" },
+    { label: "16–30 days", min: 16, max: 30, cls: "ok" },
+    { label: "31–45 days", min: 31, max: 45, cls: "warn" },
+    { label: "45+ days", min: 46, max: Infinity, cls: "bad" }
+  ];
+  const unitAge = u => (u.age != null ? u.age : 10);
+  function renderAging() {
+    let totalRisk = 0;
+    const maxCount = Math.max(1, units.length);
+    const html = AGE_BUCKETS.map(b => {
+      const inB = units.filter(u => { const a = unitAge(u); return a >= b.min && a <= b.max; });
+      const risk = inB.reduce((s, u) => s + unitAge(u) * u.cost, 0);
+      totalRisk += risk;
+      const pct = Math.round((inB.length / maxCount) * 100);
+      return `<div class="age-bucket ${b.cls}">
+        <div class="ab-range">${b.label}</div>
+        <div class="ab-count">${inB.length}</div>
+        <div class="ab-risk">${money0(risk)} at risk</div>
+        <div class="ab-bar"><i style="width:${pct}%"></i></div>
+      </div>`;
+    }).join("");
+    $("#agingGrid").innerHTML = html;
+    $("#agingTotal").textContent = money0(totalRisk) + " total floorplan exposure";
+  }
+
+  /* ============================================================
+     PAGE 2 — ALERTS CENTER
+     ============================================================ */
+  const alertData = [
+    { type: "delay",   ic: "⏳", title: "Recon Delay", body: "2020 Tesla Model 3 has been in Mechanical 6 days (avg 4). Escalate to service manager." },
+    { type: "aging",   ic: "📆", title: "Inventory Aging", body: "2020 Chevy Equinox is nearing 45 days in stock. Consider a price adjustment on completion." },
+    { type: "pricing", ic: "🏷️", title: "Pricing Opportunity", body: "Market demand for the 2022 BMW 328i is up 6%. Recommended reprice: +$450." },
+    { type: "match",   ic: "🤝", title: "Hot Match", body: "Sarah Mitchell (96% · CRM) is a same-day-call match for the ready BMW 328i." }
+  ];
+  function renderAlerts() {
+    $("#alertsWrap").innerHTML = alertData.map((a, i) => `
+      <div class="card alert-card ${ackedAlerts.has(i) ? "resolved" : ""}" data-alert="${i}">
+        <div class="alert-ic ${a.type}">${a.ic}</div>
+        <div class="alert-body">
+          <h4>${a.title}</h4>
+          <p>${a.body}</p>
+          <span class="alert-tag ${a.type}">${a.type}</span>
+        </div>
+        <button class="btn ghost sm js-ack" ${ackedAlerts.has(i) ? "disabled" : ""}>${ackedAlerts.has(i) ? "Resolved ✓" : "Acknowledge"}</button>
+      </div>`).join("");
+    $$(".js-ack").forEach(btn => btn.addEventListener("click", function () {
+      const card = btn.closest(".alert-card");
+      const idx = +card.dataset.alert;
+      ackedAlerts.add(idx);
+      card.classList.add("resolved");
+      btn.textContent = "Resolved ✓";
+      btn.disabled = true;
+      persist();
+      toast("Alert acknowledged");
+    }));
+  }
+
+  /* ============================================================
+     PAGE 3 — ALL UNITS
+     ============================================================ */
+  const unitList = $("#unitList");
+  function unitMarkup(u, isNew) {
+    const recon = isRecon(u), delayed = isDelayed(u);
+    const segs = STAGES.map((_, i) => {
+      let cls = "seg";
+      if (i < u.stage) cls += " done";
+      else if (i === u.stage) cls += " current";
+      return `<div class="${cls}"></div>`;
+    }).join("");
+    const labels = STAGES.map((s, i) => `<span class="${i === u.stage ? "on" : ""}">${s}</span>`).join("");
+    const lock = recon
+      ? `<span class="lock locked" title="Not syndicated — in recon">🔒</span>`
+      : `<span class="lock unlocked" title="Front-line ready — syndicated">🔓</span>`;
+    const status = isReady(u)
+      ? `<span class="badge ready">✓ Ready · syndicated</span>`
+      : (delayed ? `<span class="badge delay">⚠ DELAY ${u.days - STAGE_AVG[u.stage]}d</span>` : `<span class="badge ok">On pace</span>`);
+    const accrue = recon
+      ? `<div class="veh-metric m-accr"><div class="n accrue js-unit-accrued" data-rate="${u.cost}">$0.00</div><div class="l">Accrued today</div></div>`
+      : `<div class="veh-metric m-accr"><div class="n" style="color:var(--mint)">$0</div><div class="l">Recon done</div></div>`;
+    const timeline = u.history.map(h => `
+      <li><span class="tl-dot ${h.state === "pending" ? "pending" : ""}"></span>
+        <div><strong>${h.stage}</strong> — <span style="color:var(--muted)">${h.note}</span></div>
+        <span class="tl-when">${h.when}</span></li>`).join("");
+
+    return `
+      <div class="vehicle${isNew ? " new" : ""}" data-id="${u.id}">
+        <div class="veh-main js-veh-toggle">
+          <div class="veh-id">
+            <div class="veh-title">${lock} ${u.name}</div>
+            <div class="veh-vin">VIN ${u.vin}</div>
+          </div>
+          <div class="progress">
+            <div class="stages">${segs}</div>
+            <div class="stage-labels">${labels}</div>
+          </div>
+          <div class="veh-metric m-days"><div class="n">${u.days}</div><div class="l">Days in stage</div></div>
+          <div class="veh-metric m-cost"><div class="n">$${u.cost}</div><div class="l">Per day</div></div>
+          ${accrue}
+          <div class="status">${status}</div>
+        </div>
+        <div class="veh-detail">
+          <div class="eyebrow" style="margin-top:6px;">Stage history</div>
+          <ul class="timeline">${timeline}</ul>
+          <div class="veh-actions">
+            ${u.stage < 4
+              ? `<button class="btn sm js-advance" data-id="${u.id}">Advance to ${STAGES[u.stage + 1]} →</button>
+                 <span class="hint">Advancing to Ready unlocks syndication &amp; fires customer matches.</span>`
+              : `<span class="badge ready">🔓 Front-line ready · syndicated</span>
+                 <span class="hint">Now visible in Customer Match.</span>`}
+          </div>
+        </div>
+      </div>`;
+  }
+  function renderUnits() {
+    const fs = $("#filterStage").value;
+    const sb = $("#sortBy").value;
+    let list = units.slice();
+    if (fs !== "all") list = list.filter(u => u.stage === +fs);
+    list.sort((a, b) => sb === "cost" ? b.cost - a.cost : sb === "name" ? a.name.localeCompare(b.name) : b.days - a.days);
+    unitList.innerHTML = list.length ? list.map(u => unitMarkup(u, false)).join("")
+      : `<div class="card" style="text-align:center; color:var(--muted)">No units in this stage.</div>`;
+  }
+  $("#filterStage").addEventListener("change", renderUnits);
+  $("#sortBy").addEventListener("change", renderUnits);
+  unitList.addEventListener("click", function (e) {
+    const adv = e.target.closest(".js-advance");
+    if (adv) { e.stopPropagation(); advanceStage(+adv.dataset.id); return; }
+    const t = e.target.closest(".js-veh-toggle");
+    if (t) t.closest(".vehicle").classList.toggle("open");
+  });
+  function advanceStage(id) {
+    const u = units.find(x => x.id === id);
+    if (!u || u.stage >= 4) return;
+    u.stage++;
+    u.days = 1;
+    rebuildHistory(u);
+    if (u.stage === 4 && !u.price) u.price = "$" + (18000 + (u.id * 137 % 20000)).toLocaleString("en-US");
+    renderUnits(); renderAssign(); renderMatches(); renderDashboard(); refreshUsage(); persist();
+    const card = unitList.querySelector('.vehicle[data-id="' + id + '"]');
+    if (card) card.classList.add("open");
+    if (u.stage === 4) toast(u.name + " reached Ready — unlocked, syndicated & matched");
+    else toast(u.name + " advanced to " + STAGES[u.stage]);
+  }
+
+  /* ============================================================
+     PAGE 4 — SCAN NEW VIN
+     ============================================================ */
+  const scanNames = ["2023 Toyota RAV4 XLE", "2021 Jeep Grand Cherokee", "2022 Hyundai Tucson SEL",
+    "2020 Audi Q5 Premium", "2021 Subaru Outback", "2023 Kia Sportage EX", "2022 Mazda CX-5 Touring", "2021 Nissan Altima SR"];
+  let selectedWork = "Mechanical", selectedStage = 0, scanned = null;
+  function randVin() {
+    const c = "ABCDEFGHJKLMNPRSTUVWXYZ0123456789"; let v = "";
+    for (let i = 0; i < 17; i++) v += c[Math.floor(Math.random() * c.length)];
+    return v;
+  }
+  function fmtDate(d) { return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }); }
+  function fillScanVendors() {
+    const sel = $("#scanVendor");
+    const cur = sel.value;
+    sel.innerHTML = vendorNames.map(v => `<option>${v}</option>`).join("");
+    if (cur && vendorNames.includes(cur)) sel.value = cur;
+  }
+  function updatePrediction() {
+    const base = WORK_TYPE_DAYS[selectedWork];
+    const vName = $("#scanVendor").value || "Unassigned";
+    const vt = vendorTurn(vName);
+    const days = Math.max(1, base + (vt - 2));            // work type + vendor turnaround
+    const d = new Date(); d.setDate(d.getDate() + days);
+    const pd = $("#predictedDate");
+    pd.textContent = fmtDate(d);
+    pd.classList.remove("flash"); void pd.offsetWidth; pd.classList.add("flash");
+    $("#predictedMeta").textContent = selectedWork + " · " + vName + " (" + vt + "d turn) · ~" + days + " day" + (days > 1 ? "s" : "") + " to ready";
+  }
+  $("#workTypeWrap").addEventListener("click", function (e) {
+    const c = e.target.closest(".chip"); if (!c) return;
+    $$(".chip", this).forEach(x => x.classList.remove("sel"));
+    c.classList.add("sel");
+    selectedWork = c.dataset.work;
+    updatePrediction();                                  // AI date changes on work type
+  });
+  $("#scanVendor").addEventListener("change", updatePrediction); // AI date changes on vendor
+  $("#stageWrap").addEventListener("click", function (e) {
+    const c = e.target.closest(".chip"); if (!c) return;
+    $$(".chip", this).forEach(x => x.classList.remove("sel"));
+    c.classList.add("sel");
+    selectedStage = +c.dataset.stage;
+  });
+  $("#simulateScanBtn").addEventListener("click", function () {
+    const vf = $("#viewfinder");
+    vf.classList.remove("captured"); $("#vfText").textContent = "Scanning…";
+    setTimeout(() => {
+      scanned = { vin: randVin(), name: scanNames[Math.floor(Math.random() * scanNames.length)] };
+      $("#scanVin").value = scanned.vin;
+      $("#scanName").value = scanned.name;
+      vf.classList.add("captured");
+      $("#vfText").textContent = "✓ VIN captured";
+      $("#addUnitBtn").disabled = false;
+      $("#scanSuccess").classList.remove("show");
+      updatePrediction();
+      toast("VIN captured — " + scanned.name);
+    }, 700);
+  });
+  $("#addUnitBtn").addEventListener("click", function () {
+    if (!scanned) return;
+    const vName = $("#scanVendor").value || "Unassigned";
+    const u = { id: ++uid, name: scanned.name, vin: scanned.vin, stage: selectedStage, days: 1, cost: 26 + Math.floor(Math.random() * 14), age: 1, vendor: vName, history: [] };
+    rebuildHistory(u);
+    units.unshift(u);                                    // enters recon LOCKED
+    renderUnits(); renderAssign(); renderDashboard(); refreshUsage(); persist();
+    $("#successMeta").textContent = u.name + " · " + selectedWork + " · " + vName + " · starts in " + STAGES[selectedStage];
+    $("#scanSuccess").classList.add("show");
+    $("#addUnitBtn").disabled = true;
+    scanned = null; $("#scanVin").value = ""; $("#scanName").value = "";
+    toast(u.name + " added to recon — locked, not syndicated");
+  });
+  updatePrediction();
+
+  /* ============================================================
+     PAGE 5 — VENDOR ASSIGNMENT
+     ============================================================ */
+  const assignBody = $("#assignBody");
+  function predictReadyDate(u) {
+    const remaining = 4 - u.stage;
+    const days = Math.max(1, remaining * 2 + (vendorTurn(u.vendor) - 2));
+    const d = new Date(); d.setDate(d.getDate() + days);
+    return fmtDate(d);
+  }
+  function renderAssign() {
+    const rows = units.filter(isRecon);
+    assignBody.innerHTML = rows.length ? rows.map(u => {
+      const opts = vendorNames.map(v => `<option ${v === u.vendor ? "selected" : ""}>${v}</option>`).join("");
+      return `<tr>
+        <td><span class="lock locked" title="Not syndicated — in recon">🔒</span> ${u.name}<div class="veh-vin">${u.vin}</div></td>
+        <td><span class="badge ok">${STAGES[u.stage]}</span></td>
+        <td>${u.vendor}</td>
+        <td style="color:var(--mint); font-weight:700;">${predictReadyDate(u)}</td>
+        <td><select data-id="${u.id}" class="js-reassign"><option value="">Reassign…</option>${opts}</select></td>
+      </tr>`;
+    }).join("") : `<tr><td colspan="5" style="text-align:center; color:var(--muted)">No in-recon units.</td></tr>`;
+    $$(".js-reassign", assignBody).forEach(sel => sel.addEventListener("change", function () {
+      if (!this.value) return;
+      const u = units.find(x => x.id === +this.dataset.id);
+      if (u) { u.vendor = this.value; renderAssign(); persist(); toast(u.name + " → " + u.vendor + " · AI ready date updated"); }
+    }));
+  }
+  $("#addVendorBtn").addEventListener("click", () => openModal("addVendorModal"));
+  $("#saveVendorBtn").addEventListener("click", function () {
+    const name = $("#nvName").value.trim() || "New Vendor";
+    const days = +$("#nvDays").value || 2;
+    if (!vendorNames.includes(name)) vendorNames.push(name);
+    VENDOR_TURN[name] = days;                             // new turnaround feeds AI model
+    fillScanVendors();
+    closeModal();
+    renderAssign();
+    persist();
+    toast(name + " added · " + days + "-day turnaround feeds AI model");
+    $("#nvName").value = "";
+  });
+
+  /* ============================================================
+     PAGE 6 — ACTIVE MATCHES (Ready units only)
+     ============================================================ */
+  function initials(n) { return n.split(" ").map(p => p[0]).slice(0, 2).join("").toUpperCase(); }
+  function renderMatches() {
+    const readyUnits = units.filter(isReady);
+    $("#matchList").innerHTML = readyUnits.length ? readyUnits.map(u => {
+      const custs = getCustomers(u);
+      const rows = custs.map(c => `
+        <div class="customer">
+          <div class="avatar">${initials(c.n)}</div>
+          <div class="cust-info">
+            <div class="nm">${c.n}</div>
+            <div class="sr">🔎 "${c.q}"</div>
+            <span class="src-pill ${c.src === "CRM" ? "crm" : ""}">${c.src === "CRM" ? "DealerSocket CRM" : c.src} · internal</span>
+            <span style="color:var(--muted); font-size:0.72rem; margin-left:6px;">active ${c.act}</span>
+          </div>
+          <div class="score"><div class="pct">${c.s}%</div><div class="bar"><i style="width:${c.s}%"></i></div></div>
+          <div class="cust-actions">
+            <button class="btn sm js-call" data-name="${c.n}">📞 Call</button>
+            <button class="btn ghost sm js-offer" data-name="${c.n}">✉️ Offer</button>
+          </div>
+        </div>`).join("");
+      return `
+        <div class="card match-card" data-name="${u.name}">
+          <div class="match-head js-match-toggle">
+            <div>
+              <div class="veh-title"><span class="lock unlocked" title="Front-line ready">🔓</span> ${u.name}</div>
+              <span class="ready-tag">● Front-line ready · ${u.price || ""}</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:14px;">
+              <span class="count-badge">${custs.length} <span style="font-weight:600">matches</span></span>
+              <span class="chev">▾</span>
+            </div>
+          </div>
+          <div class="panel">${rows}</div>
+        </div>`;
+    }).join("") : `<div class="card" style="text-align:center; color:var(--muted)">No front-line-ready units yet. Advance a unit to Ready in Recon Tracker.</div>`;
+  }
+  $("#matchList").addEventListener("click", function (e) {
+    const call = e.target.closest(".js-call");
+    if (call) { toast("Dialing " + call.dataset.name + "… (CRM record — internal only)"); return; }
+    const offer = e.target.closest(".js-offer");
+    if (offer) { toast("Offer drafted for " + offer.dataset.name); return; }
+    const head = e.target.closest(".js-match-toggle");
+    if (head) head.closest(".match-card").classList.toggle("open");
+  });
+
+  /* ============================================================
+     PAGE 7 — CRM DATA BRIDGE
+     ============================================================ */
+  let syncing = false;
+  const syncEvents = [
+    { st: "07:02", t: "Pulled 128 new shopper signals from DealerSocket CRM" },
+    { st: "07:02", t: "Ingested 44 saved-search alerts (AutoTrader, Cars.com)" },
+    { st: "07:03", t: "Re-scored 7 active matches on Ready inventory" }
+  ];
+  function renderSyncLog() {
+    $("#syncLog").innerHTML = syncEvents.map(e => `<li><span class="st">${e.st}</span><span>${e.t}</span></li>`).join("");
+  }
+  $("#forceSyncBtn").addEventListener("click", function () {
+    if (syncing) return; syncing = true;
+    const bar = $("#syncProgress"); let p = 0; bar.style.width = "0";
+    $("#forceSyncBtn").disabled = true; $("#forceSyncBtn").textContent = "Syncing…";
+    const iv = setInterval(() => {
+      p += Math.random() * 18 + 6; if (p >= 100) p = 100;
+      bar.style.width = p + "%";
+      if (p >= 100) {
+        clearInterval(iv); syncing = false;
+        $("#forceSyncBtn").disabled = false; $("#forceSyncBtn").textContent = "⟳ Force Sync";
+        const t = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+        syncEvents.unshift({ st: t, t: "Manual sync complete — " + (120 + Math.floor(Math.random() * 60)) + " records refreshed" });
+        renderSyncLog();
+        $("#lastSync").textContent = "just now";
+        $("#recLeads").textContent = (3412 + Math.floor(Math.random() * 40)).toLocaleString();
+        toast("CRM sync complete");
+      }
+    }, 220);
+  });
+
+  /* ============================================================
+     PAGE 8 — CONVERSION ANALYTICS
+     ============================================================ */
+  const convDaily = [
+    { d: "Mon", m: 12 }, { d: "Tue", m: 18 }, { d: "Wed", m: 9 }, { d: "Thu", m: 22 },
+    { d: "Fri", m: 15 }, { d: "Sat", m: 24 }, { d: "Sun", m: 11 }
+  ];
+  const CONV_MAX = 26;
+  const convResults = [
+    { u: "2022 BMW 328i xDrive", c: "Sarah Mitchell", src: "CRM", out: "Sold" },
+    { u: "2022 BMW 328i xDrive", c: "James Rodriguez", src: "AutoTrader", out: "Appointment" },
+    { u: "2021 Toyota RAV4 XLE", c: "Michael Brown", src: "CRM", out: "Sold" },
+    { u: "2021 Toyota RAV4 XLE", c: "Lisa Wang", src: "AutoTrader", out: "Contacted" },
+    { u: "2022 Hyundai Tucson SEL", c: "David Johnson", src: "CRM", out: "Appointment" },
+    { u: "2022 Hyundai Tucson SEL", c: "Robert Taylor", src: "Cars.com", out: "No answer" },
+    { u: "2022 Hyundai Tucson SEL", c: "Amanda White", src: "AutoTrader", out: "Contacted" }
+  ];
+  function renderConvBars() {
+    $("#convBars").innerHTML = convDaily.map(d => `
+      <div class="bar-col">
+        <div class="vl">${d.m}</div>
+        <div class="track"><div class="fill" data-h="${(d.m / CONV_MAX) * 100}" style="height:0"></div></div>
+        <div class="xl">${d.d}</div>
+      </div>`).join("");
+  }
+  function playConvChart() {
+    $$("#convBars .fill").forEach(el => el.style.height = "0");
+    requestAnimationFrame(() => requestAnimationFrame(() =>
+      $$("#convBars .fill").forEach(el => el.style.height = el.dataset.h + "%")));
+  }
+  function outColor(o) { return o === "Sold" ? "var(--mint)" : o === "Appointment" ? "var(--stage-2)" : o === "Contacted" ? "var(--amber)" : "var(--danger)"; }
+  function renderConvTable() {
+    const fo = $("#convOutcome").value, fs = $("#convSource").value;
+    const rows = convResults.filter(r => (fo === "all" || r.out === fo) && (fs === "all" || r.src === fs));
+    $("#convBody").innerHTML = rows.length ? rows.map(r => `
+      <tr><td>${r.u}</td><td>${r.c}</td>
+        <td><span class="src-pill ${r.src === "CRM" ? "crm" : ""}">${r.src}</span></td>
+        <td style="color:${outColor(r.out)}; font-weight:700;">${r.out}</td></tr>`).join("")
+      : `<tr><td colspan="4" style="text-align:center; color:var(--muted)">No results for that filter.</td></tr>`;
+  }
+  $("#convOutcome").addEventListener("change", renderConvTable);
+  $("#convSource").addEventListener("change", renderConvTable);
+
+  /* ============================================================
+     PAGE 9 — TODAY'S BRIEF (typewriter)
+     ============================================================ */
+  const briefSets = [
+    { date: "Today · " + new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }),
+      bullets: [
+        "7 units in inventory; 4 in recon and 2 are exceeding stage-average time and need attention today.",
+        "Floorplan carrying cost is $" + reconDailyRate() + "/day — clearing Detail saves roughly $96/day.",
+        "3 front-line-ready units carry fresh CRM matches; 2 are 90%+ scores worth a same-day call.",
+        "Mechanical is the current bottleneck — the Tesla Model 3 has sat 6 days versus a 4-day target.",
+        "2020 Chevy Equinox is approaching 45 days in stock — plan a reprice on completion."
+      ] },
+    { date: "Tomorrow · Projected",
+      bullets: [
+        "Throughput improves 15% after tonight's push; 3 units projected to reach Ready.",
+        "Floorplan cost falls to ~$300/day as locked units clear the recon line.",
+        "9 new customer matches expected — the highest single-day total this month.",
+        "Photo station clears its backlog; average Photos time drops to 1.4 days.",
+        "Priority: keep the Equinox moving through Pricing before it ages further."
+      ] },
+    { date: "Following Day · Projected",
+      bullets: [
+        "Inventory velocity now runs ahead of the monthly plan.",
+        "Floorplan trending to $260/day; roughly $1,830 saved versus last Tuesday.",
+        "6 matches queued, including a 97% CRM score on the incoming Audi Q5.",
+        "Mechanical fully caught up — no unit exceeds its stage average.",
+        "Recommend re-pricing 3 aged units flagged by the market-demand model."
+      ] }
+  ];
+  let briefIndex = 0, typingToken = 0;
+  function typeBrief(set) {
+    const myToken = ++typingToken;
+    $("#briefDate").textContent = set.date;
+    $("#briefList").innerHTML = set.bullets.map((_, i) =>
+      `<li><span class="brief-num">${i + 1}</span><span class="txt" id="bt${i}"></span></li>`).join("");
+    let li = 0, ci = 0;
+    (function step() {
+      if (myToken !== typingToken) return;
+      if (li >= set.bullets.length) return;
+      const span = $("#bt" + li), full = set.bullets[li];
+      if (ci < full.length) { ci++; span.innerHTML = full.slice(0, ci) + '<span class="caret"></span>'; setTimeout(step, 12); }
+      else { span.textContent = full; li++; ci = 0; setTimeout(step, 110); }
+    })();
+  }
+  $("#regenBtn").addEventListener("click", function () {
+    briefIndex = (briefIndex + 1) % briefSets.length;
+    typeBrief(briefSets[briefIndex]);
+    toast(briefIndex === 0 ? "Showing today's brief" : "Fresh brief generated");
+  });
+  $("#sendEmailBtn").addEventListener("click", () => toast("Brief emailed to dana@dealership.com"));
+  $("#sendSmsBtn").addEventListener("click", () => toast("Brief sent as SMS to GM"));
+  $("#copyBriefBtn").addEventListener("click", function () {
+    const txt = briefSets[briefIndex].date + "\n" + briefSets[briefIndex].bullets.map((b, i) => (i + 1) + ". " + b).join("\n");
+    const done = () => toast("Brief copied to clipboard");
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done).catch(() => fallbackCopy(txt, done));
+    else fallbackCopy(txt, done);
+  });
+  function fallbackCopy(txt, cb) {
+    const ta = document.createElement("textarea"); ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta); cb();
+  }
+
+  /* ============================================================
+     PAGE 10 — BRIEFING HISTORY
+     ============================================================ */
+  const history = [
+    { date: "Jul 1, 2026", sum: "Detail bottleneck cleared; 3 units reached Ready.", bullets: ["Detail bay caught up — avg 2.0 days.", "3 units hit front-line ready.", "Floorplan down to $298/day.", "5 CRM matches fired overnight.", "No DELAY flags at open."] },
+    { date: "Jun 30, 2026", sum: "Two DELAY flags in Mechanical; escalated.", bullets: ["Tesla + Equinox flagged in Mechanical.", "Escalated both to service manager.", "Floorplan at $412/day.", "6 matches; 2 above 90%.", "Photos station on target."] },
+    { date: "Jun 29, 2026", sum: "Strong match day — 24 matches fired.", bullets: ["Record 24 matches in one day.", "38% match-to-sale rate held.", "2 units repriced on demand model.", "Recon avg down to 14.2 days.", "Body shop still over target."] },
+    { date: "Jun 28, 2026", sum: "Body shop slipping; scorecard flagged C.", bullets: ["MidState Body Shop dropped to C.", "Avg turn 4.7d vs 3.5d target.", "Recommend splitting volume.", "Floorplan $388/day.", "4 CRM matches."] },
+    { date: "Jun 27, 2026", sum: "Photo vendor ahead of target all week.", bullets: ["ClearShot at 0.9d vs 1.0d target.", "97% on-time rate.", "Pricing stage smooth.", "7 units in recon.", "1 aging alert (Equinox)."] },
+    { date: "Jun 26, 2026", sum: "Floorplan hit a monthly low.", bullets: ["Floorplan down to $260/day.", "Saved ~$1,830 vs prior week.", "9 matches queued.", "No stage over average.", "Audi Q5 inbound — 97% match."] },
+    { date: "Jun 25, 2026", sum: "New scanning workflow rolled out.", bullets: ["VIN scan + AI date live.", "Avg intake time down 40%.", "All new units locked on entry.", "5 matches fired.", "Mechanical caught up."] }
+  ];
+  function renderHistory(filter) {
+    const q = (filter || "").toLowerCase();
+    const rows = history.filter(h => !q || (h.date + " " + h.sum + " " + h.bullets.join(" ")).toLowerCase().includes(q));
+    $("#histCount").textContent = rows.length + " of " + history.length + " briefings";
+    $("#historyWrap").innerHTML = rows.length ? rows.map((h, i) => `
+      <div class="hist-row" data-i="${i}">
+        <div class="hist-head js-hist-toggle">
+          <div><div class="hd">${h.date}</div><div class="hs">${h.sum}</div></div>
+          <span class="chev" style="margin-left:auto;">▾</span>
+        </div>
+        <div class="hist-body"><ul>${h.bullets.map(b => `<li>${b}</li>`).join("")}</ul></div>
+      </div>`).join("")
+      : `<div class="card" style="text-align:center; color:var(--muted)">No briefings match "${filter}".</div>`;
+  }
+  $("#historySearch").addEventListener("input", function () { renderHistory(this.value); });
+  $("#historyWrap").addEventListener("click", function (e) {
+    const h = e.target.closest(".js-hist-toggle");
+    if (h) h.closest(".hist-row").classList.toggle("open");
+  });
+
+  /* ============================================================
+     PAGE 11 — VENDOR SCORECARD
+     ============================================================ */
+  const vendors = [
+    { name: "Precision Auto Detail", type: "Detail vendor", score: 9.1, avg: 1.8, target: 2.0, onTime: 94, trend: [2.3, 2.1, 2.0, 1.9, 1.8], stages: "Detail 1.8d avg · intake→out 1.6d · rework 4%" },
+    { name: "ClearShot Photography", type: "Photography vendor", score: 8.7, avg: 0.9, target: 1.0, onTime: 97, trend: [1.2, 1.1, 1.0, 1.0, 0.9], stages: "Photos 0.9d avg · 32 photos/unit · reshoot 2%" },
+    { name: "MidState Body Shop", type: "Body / paint", score: 6.4, avg: 4.7, target: 3.5, onTime: 71, trend: [3.6, 4.0, 4.3, 4.5, 4.7], stages: "Body 4.7d avg · paint match 88% · comeback 9%" },
+    { name: "QuickLube Recon", type: "Mechanical vendor", score: 5.2, avg: 5.9, target: 3.5, onTime: 58, trend: [4.8, 5.2, 5.5, 5.7, 5.9], stages: "Mechanical 5.9d avg · parts delay 3.1d · redo 12%" }
+  ];
+  const TREND_MAX = 6;
+  function scoreClass(s) { return s >= 8 ? "good" : s >= 6 ? "mid" : "bad"; }
+  function renderScorecard() {
+    $("#scorecardWrap").innerHTML = vendors.map((v, i) => {
+      const bars = v.trend.map(t => `<i data-h="${(t / TREND_MAX) * 34}" style="height:0"></i>`).join("");
+      return `
+      <div class="card vcard" data-i="${i}">
+        <div class="vhead js-v-toggle">
+          <div class="vscore ${scoreClass(v.score)}">${v.score}</div>
+          <div class="vident"><div class="vn">${v.name}</div><div class="vt">${v.type}</div></div>
+          <div class="vtrend" title="5-week trend">${bars}</div>
+          <span class="chev">▾</span>
+        </div>
+        <div class="vmetrics">
+          <div class="vm"><div class="n">${v.avg}d</div><div class="l">Avg turn</div></div>
+          <div class="vm"><div class="n">${v.target}d</div><div class="l">Target</div></div>
+          <div class="vm"><div class="n">${v.onTime}%</div><div class="l">On time</div></div>
+          <div class="vm"><div class="n" style="color:${v.avg <= v.target ? "var(--mint)" : "var(--danger)"}">${v.avg <= v.target ? "On target" : "Over"}</div><div class="l">Status</div></div>
+        </div>
+        <div class="vdetail">
+          <div class="eyebrow" style="margin-top:4px;">Stage breakdown</div>
+          <p style="color:var(--muted); font-size:0.88rem; margin:4px 0;">${v.stages}</p>
+          <div class="ai-note">🤖 Turnaround time feeds the AI prediction model.</div>
+        </div>
+      </div>`;
+    }).join("");
+    $$(".js-v-toggle").forEach(h => h.addEventListener("click", () => h.closest(".vcard").classList.toggle("open")));
+  }
+  function playVendorTrends() {
+    $$("#scorecardWrap .vtrend i").forEach(el => el.style.height = "0");
+    requestAnimationFrame(() => requestAnimationFrame(() =>
+      $$("#scorecardWrap .vtrend i").forEach(el => el.style.height = el.dataset.h + "px")));
+  }
+
+  /* ============================================================
+     PAGE 12 — FLOORPLAN RATE CALCULATOR
+     ============================================================ */
+  let dealerMonthlySavings = 0;
+  function calc() {
+    const rate = Math.max(0, +$("#inRate").value || 0);
+    const unitsM = Math.max(0, +$("#inUnits").value || 0);
+    const saved = Math.max(0, +$("#inSaved").value || 0);
+    const monthly = rate * saved * unitsM;               // recovered floorplan / month
+    const annual = monthly * 12;
+    const net = annual - 3588;
+    const roi = monthly > 0 ? Math.round(annual / 3588) : 0;
+    dealerMonthlySavings = monthly;
+    $("#outMonthly").textContent = money0(monthly);
+    $("#outRecovered").textContent = money0(monthly);
+    $("#outAnnual").textContent = money0(annual);
+    $("#outNet").textContent = money0(net);
+    $("#outRoi").textContent = roi + "× annual ROI";
+  }
+  ["#inRate", "#inUnits", "#inSaved"].forEach(sel => $(sel).addEventListener("input", function () { calc(); persist(); }));
+
+  /* ============================================================
+     PAGE 13 — USER ROLES
+     ============================================================ */
+  const staff = [
+    { name: "Dana Whitfield", role: "GM" },
+    { name: "Marcus Lee", role: "Sales Manager" },
+    { name: "Priya Nair", role: "Recon Manager" },
+    { name: "Tom Alvarez", role: "Salesperson" },
+    { name: "Nina Petrov", role: "BDC" }
+  ];
+  const ROLES = ["GM", "Sales Manager", "Recon Manager", "Salesperson", "BDC"];
+  const roleClass = r => "role-" + r.toLowerCase().replace(/\s+/g, "-");
+  function renderRoles() {
+    $("#rolesBody").innerHTML = staff.map((s, i) => `
+      <tr>
+        <td>${s.name}</td>
+        <td><span class="role-badge ${roleClass(s.role)}" data-badge="${i}">${s.role}</span></td>
+        <td><select class="js-role" data-i="${i}">${ROLES.map(r => `<option ${r === s.role ? "selected" : ""}>${r}</option>`).join("")}</select></td>
+      </tr>`).join("");
+    $$(".js-role").forEach(sel => sel.addEventListener("change", function () {
+      const i = +this.dataset.i; staff[i].role = this.value;
+      const badge = $('[data-badge="' + i + '"]');
+      badge.className = "role-badge " + roleClass(this.value);
+      badge.textContent = this.value;
+      persist();
+      toast(staff[i].name + " is now " + this.value);
+    }));
+  }
+
+  /* ============================================================
+     PAGE 14 — SUBSCRIPTION & BILLING
+     ============================================================ */
+  function refreshUsage() {
+    $("#usageUnits").textContent = units.length;
+    $("#usageMatches").textContent = units.filter(isReady).length;
+  }
+  $("#cancelBtn").addEventListener("click", function () {
+    calc(); // ensure latest figure
+    $("#retentionSavings").textContent = money0(dealerMonthlySavings);
+    openModal("retentionModal");
+  });
+  $("#keepBtn").addEventListener("click", function () { closeModal(); toast("Great call — your savings keep compounding"); });
+  $("#confirmCancelBtn").addEventListener("click", function () { closeModal(); toast("Cancellation request received — an account manager will follow up"); });
+  $("#resetDemoBtn").addEventListener("click", function () { toast("Resetting demo data…"); setTimeout(resetDemo, 400); });
+
+  /* ============================================================
+     COMMAND PALETTE (Ctrl / Cmd + K)
+     ============================================================ */
+  const cmdk = $("#cmdk"), cmdkInput = $("#cmdkInput"), cmdkList = $("#cmdkList");
+  let cmdkSel = 0, cmdkResults = [];
+  const PAGE_INDEX = [
+    { t: "Overview", s: "Dashboard", page: "overview", ic: "📊" },
+    { t: "Alerts Center", s: "Dashboard", page: "alerts", ic: "🔔" },
+    { t: "All Units", s: "Recon Tracker", page: "units", ic: "🚗" },
+    { t: "Scan New VIN", s: "Recon Tracker", page: "scan", ic: "📷" },
+    { t: "Vendor Assignment", s: "Recon Tracker", page: "assign", ic: "🏷️" },
+    { t: "Active Matches", s: "Customer Match", page: "matches", ic: "🤝" },
+    { t: "CRM Data Bridge", s: "Customer Match", page: "bridge", ic: "🔗" },
+    { t: "Conversion Analytics", s: "Customer Match", page: "conversion", ic: "📈" },
+    { t: "Today's Brief", s: "GM Briefing", page: "brief", ic: "🧠" },
+    { t: "Briefing History", s: "GM Briefing", page: "history", ic: "🗂️" },
+    { t: "Vendor Scorecard", s: "Vendor Reports", page: "scorecard", ic: "🏆" },
+    { t: "Floorplan Rate", s: "Settings", page: "floorplan", ic: "🧮" },
+    { t: "User Roles", s: "Settings", page: "roles", ic: "👥" },
+    { t: "Subscription & Billing", s: "Settings", page: "billing", ic: "💳" }
+  ];
+  function buildCmdkResults(q) {
+    q = (q || "").toLowerCase().trim();
+    const out = [];
+    PAGE_INDEX.forEach(p => {
+      if (!q || (p.t + " " + p.s).toLowerCase().includes(q))
+        out.push({ ic: p.ic, t: p.t, s: p.s, k: "Page", act: () => showPage(p.page) });
+    });
+    units.forEach(u => {
+      if (q && (u.name + " " + u.vin).toLowerCase().includes(q)) {
+        const ready = isReady(u);
+        out.push({
+          ic: ready ? "🔓" : "🔒", t: u.name, s: (ready ? "Ready · " : STAGES[u.stage] + " · ") + "VIN " + u.vin.slice(-6),
+          k: ready ? "Match" : "Unit",
+          act: () => { showPage(ready ? "matches" : "units"); setTimeout(() => { const c = unitList.querySelector('.vehicle[data-id="' + u.id + '"]'); if (c) { c.classList.add("open"); c.scrollIntoView({ behavior: "smooth", block: "center" }); } }, 240); }
+        });
+      }
+    });
+    if (q) units.filter(isReady).forEach(u => getCustomers(u).forEach(c => {
+      if ((c.n + " " + c.src).toLowerCase().includes(q))
+        out.push({ ic: "👤", t: c.n, s: c.s + "% · " + c.src + " · " + u.name, k: "Customer", act: () => showPage("matches") });
+    }));
+    return out.slice(0, 20);
+  }
+  function renderCmdk() {
+    if (!cmdkResults.length) { cmdkList.innerHTML = `<div class="cmdk-empty">No matches found.</div>`; return; }
+    cmdkList.innerHTML = cmdkResults.map((r, i) => `
+      <div class="cmdk-item ${i === cmdkSel ? "sel" : ""}" data-i="${i}">
+        <span class="ci-ic">${r.ic}</span>
+        <div><div class="ci-t">${r.t}</div><div class="ci-s">${r.s}</div></div>
+        <span class="ci-k">${r.k}</span>
+      </div>`).join("");
+  }
+  function openCmdk() {
+    cmdk.classList.add("open"); cmdk.setAttribute("aria-hidden", "false");
+    cmdkInput.value = ""; cmdkSel = 0; cmdkResults = buildCmdkResults(""); renderCmdk();
+    setTimeout(() => cmdkInput.focus(), 30);
+  }
+  function closeCmdk() { cmdk.classList.remove("open"); cmdk.setAttribute("aria-hidden", "true"); }
+  function runCmdk(i) { const r = cmdkResults[i]; if (r) { closeCmdk(); r.act(); } }
+  $("#cmdkBtn").addEventListener("click", openCmdk);
+  cmdkInput.addEventListener("input", function () { cmdkResults = buildCmdkResults(this.value); cmdkSel = 0; renderCmdk(); });
+  cmdkList.addEventListener("click", function (e) { const it = e.target.closest(".cmdk-item"); if (it) runCmdk(+it.dataset.i); });
+  cmdk.addEventListener("click", function (e) { if (e.target === cmdk) closeCmdk(); });
+  document.addEventListener("keydown", function (e) {
+    if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "K")) { e.preventDefault(); cmdk.classList.contains("open") ? closeCmdk() : openCmdk(); return; }
+    if (!cmdk.classList.contains("open")) return;
+    if (e.key === "Escape") { e.preventDefault(); closeCmdk(); }
+    else if (e.key === "ArrowDown") { e.preventDefault(); cmdkSel = Math.min(cmdkSel + 1, cmdkResults.length - 1); renderCmdk(); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); cmdkSel = Math.max(cmdkSel - 1, 0); renderCmdk(); }
+    else if (e.key === "Enter") { e.preventDefault(); runCmdk(cmdkSel); }
+  });
+
+  /* ============================================================
+     MODALS
+     ============================================================ */
+  const backdrop = $("#modalBackdrop");
+  function openModal(id) {
+    $$(".modal", backdrop).forEach(m => m.style.display = "none");
+    $("#" + id).style.display = "block";
+    backdrop.classList.add("open");
+  }
+  function closeModal() { backdrop.classList.remove("open"); }
+  backdrop.addEventListener("click", function (e) {
+    if (e.target === backdrop || e.target.hasAttribute("data-close")) closeModal();
+  });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+  /* ============================================================
+     INIT — render everything once
+     ============================================================ */
+  loadState();          // restore any persisted demo state first
+  fillScanVendors();    // populate what-if vendor dropdown
+  renderDashboard();
+  renderAlerts();
+  renderUnits();
+  renderAssign();
+  renderMatches();
+  renderSyncLog();
+  renderConvBars();
+  renderConvTable();
+  typeBrief(briefSets[0]);
+  renderHistory("");
+  renderScorecard();
+  calc();
+  renderRoles();
+  refreshUsage();
+  updatePrediction();   // reflect restored vendor list in AI estimate
+  tick(); // paint tickers immediately
+
+})();
+</script>
+</body>
+</html>
+
+
+
