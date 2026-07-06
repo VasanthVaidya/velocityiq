@@ -677,7 +677,10 @@
   .dev-toggle.on .dt-track { background: linear-gradient(135deg, var(--mint), var(--teal)); border-color: transparent; }
   .dev-toggle.on .dt-track::after { transform: translateX(18px); background: #04121a; }
   .dev-toggle.on { color: var(--ink); }
-  #liveArchToggle { display: none; }
+  /* Production build: hide the engineering "Developer Mode" controls from the
+     manager-facing demo. (Live Architecture + Developer Center are already
+     gated behind dev-on, which can no longer be enabled here.) */
+  #devModeToggle, #liveArchToggle { display: none !important; }
   body.dev-on #liveArchToggle { display: inline-flex; }
   .dev-profile { width: 34px; height: 34px; border-radius: 50%; flex: none; display: grid; place-items: center; cursor: pointer;
     font-weight: 800; color: #04121a; background: linear-gradient(135deg, var(--mint), var(--teal)); font-size: 0.78rem;
@@ -3317,7 +3320,7 @@
     document.getElementById("devModeToggle").addEventListener("click", () => setDevMode(!devMode));
     document.getElementById("liveArchToggle").addEventListener("click", () => { if (devMode) setLiveArch(!liveArch); });
     document.getElementById("devProfile").addEventListener("click", () => toast("Signed in: Dana Whitfield · General Manager · Whitfield Auto Group"));
-    document.addEventListener("keydown", e => { if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "D" || e.key === "d")) { e.preventDefault(); setDevMode(!devMode); } });
+    /* Production build: Developer Mode keyboard shortcut disabled. */
 
     /* register Developer Center in the router + mobile menu */
     pageToTab.devcenter = "developer";
@@ -3332,14 +3335,13 @@
     /* wrap showPage so dev surfaces follow navigation */
     const _showPage = showPage;
     showPage = function (id) {
-      if (id === "devcenter" && !devMode) setDevMode(true);
+      if (id === "devcenter") { _showPage("overview"); return; } /* Developer Center hidden in production */
       _showPage(id);
       if (devMode) { updateStatusBar(); renderMinimap(); if (liveArch) replayFlow(); if (id === "devcenter") { renderApiMonitor(); renderFlags(); renderDevArch(); buildFleetFilters(); } }
     };
 
-    /* restore persisted preference */
-    let restore = "0"; try { restore = localStorage.getItem("viq_dev_mode") || "0"; } catch (e) { }
-    if (restore === "1") setDevMode(true);
+    /* Production build: force Developer Mode off and clear any stale preference. */
+    try { localStorage.removeItem("viq_dev_mode"); } catch (e) { }
   })();
 
 })();
