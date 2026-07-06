@@ -1,0 +1,63 @@
+name: Deploy VelocityIQ (production + staging)
+
+# ONE Pages site serves BOTH environments so each branch keeps its own link:
+#   Production (main) -> https://vasanthvaidya.github.io/velocityiq/
+#   Staging   (dev)  -> https://vasanthvaidya.github.io/velocityiq/dev/
+#
+# This identical workflow lives on BOTH branches. A push to main OR dev rebuilds
+# the whole site from the latest of BOTH branches, so neither link ever wipes the
+# other. Uses the "GitHub Actions" Pages source (no repo-settings change needed).
+on:
+  push:
+    branches: [main, dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Serialize deploys; let in-progress ones finish (queue) instead of cancelling.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout main (production source)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main-src
+
+      - name: Checkout dev (staging source)
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          path: dev-src
+
+      - name: Assemble combined site
+        run: |
+          mkdir -p _site/dev
+          # --- Production at site root (from main) ---
+          cp main-src/velocityiq.html _site/index.html
+          cp main-src/velocityiq.html _site/velocityiq.html
+          # --- Staging under /dev/ (from dev) with a visible STAGING badge ---
+          sed 's@</body>@<div style="position:fixed;left:12px;bottom:12px;z-index:99999;font:700 11px system-ui,sans-serif;letter-spacing:.5px;padding:6px 12px;border-radius:999px;background:#FFB347;color:#04121a;box-shadow:0 8px 22px rgba(0,0,0,.45)">STAGING &middot; dev branch</div></body>@' dev-src/velocityiq.html > _site/dev/index.html
+          cp _site/dev/index.html _site/dev/velocityiq.html
+          touch _site/.nojekyll
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+

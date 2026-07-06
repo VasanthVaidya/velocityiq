@@ -33,8 +33,8 @@ manager opens on `main`.
 velocityiq.html      → the entire application (HTML + CSS + JS, one file)
 index.html           → generated at deploy time from velocityiq.html (Pages landing page)
 .github/workflows/
-    deploy-main.yml  → publishes main → gh-pages root  (production link)
-    deploy-dev.yml   → publishes dev  → gh-pages /dev/  (staging link)
+    deploy.yml       → one workflow (on both branches) that builds BOTH environments:
+                       main → site root, dev → /dev/ subfolder
 serve-local.js       → optional local dev server with live-reload (NOT deployed)
 README.md            → this file
 ```
@@ -64,39 +64,32 @@ Editing `velocityiq.html` and saving auto-refreshes the browser.
 
 ## 🌐 Deployment (GitHub Pages · two environments)
 
-This repo publishes **two independent live sites** from the **same repo**, using the
-`gh-pages` branch with per-branch subfolders:
+This repo publishes **two independent live sites** from **one Pages site**, so each branch
+keeps its own link:
 
-| Branch | Deploys to (gh-pages) | Live URL |
-| ------ | --------------------- | -------- |
-| `main` | `/` (root) | https://vasanthvaidya.github.io/velocityiq/ |
-| `dev`  | `/dev/` | https://vasanthvaidya.github.io/velocityiq/dev/ |
+| Branch | Served at | Live URL |
+| ------ | --------- | -------- |
+| `main` | site root | https://vasanthvaidya.github.io/velocityiq/ |
+| `dev`  | `/dev/`   | https://vasanthvaidya.github.io/velocityiq/dev/ |
 
 **How it works**
 
-1. Pushing **`main`** runs `deploy-main.yml` → builds `index.html` from `velocityiq.html`
-   and publishes it to the **root** of the `gh-pages` branch (it never touches `/dev`).
-2. Pushing **`dev`** runs `deploy-dev.yml` → publishes to the **`/dev/`** subfolder and
-   stamps a **STAGING** badge on the page.
-3. GitHub serves the `gh-pages` branch, so both URLs stay live 24/7 and each redeploys on
-   its own push — completely independently.
+1. The **same** `deploy.yml` lives on **both** branches and triggers on push to `main` *or* `dev`.
+2. Each run checks out **both** branches and builds one combined site:
+   `main/velocityiq.html` → root, `dev/velocityiq.html` → `/dev/` (with a **STAGING** badge).
+3. It deploys via the **GitHub Actions** Pages source, so pushing either branch refreshes both
+   links from the latest of each branch — neither ever overwrites the other.
 
-**One-time setup** (already done for this repo; needed only on a fresh fork):
+> One-time repo setting (already configured): **Settings → Pages → Source: GitHub Actions**.
 
-```
-GitHub → Settings → Pages → Build and deployment
-  Source: Deploy from a branch
-  Branch: gh-pages   Folder: / (root)   → Save
-```
-
-**Work on the staging branch**
+**Work on the staging branch** (its own link, never touches production):
 
 ```bash
 git checkout dev
 # edit velocityiq.html …
 git add -A
 git commit -m "Try something new"
-git push origin dev         # → redeploys ONLY the /dev/ link in ~1–2 min
+git push origin dev         # → refreshes the /dev/ link in ~1–2 min
 ```
 
 **Promote staging to production** when you're happy with it:
@@ -104,7 +97,7 @@ git push origin dev         # → redeploys ONLY the /dev/ link in ~1–2 min
 ```bash
 git checkout main
 git merge dev
-git push origin main        # → redeploys the main link
+git push origin main        # → refreshes the main link
 ```
 
 Track deploys under the repo's **Actions** tab.
