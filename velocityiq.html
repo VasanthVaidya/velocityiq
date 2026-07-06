@@ -886,6 +886,293 @@
     .dev-statusbar { font-size: 0.68rem; gap: 10px; }
     .dvi { width: 100vw; }
   }
+
+  /* ============================================================
+     INVENTORY+ MODE — Solera light-theme parity layer
+     Scoped entirely under body.inv-on. Zero effect while OFF.
+     Prefixes: .inv-*  · remaps existing design tokens + reskins
+     every existing component so VelocityIQ reads as a native
+     Inventory+ module.
+     ============================================================ */
+  :root {
+    --sol-blue: #0066CC; --sol-blue-d: #0057ad; --sol-green: #00A651;
+    --sol-amber: #F59E0B; --sol-red: #DC2626;
+    --sol-ink: #1A202C; --sol-body: #374151; --sol-muted: #64748B;
+    --sol-line: #E2E8F0; --sol-line-soft: #F1F5F9; --sol-hover: #F8FAFC;
+    --sol-sidebar: #1A2332; --sol-sidebar-hover: #243447;
+    --sol-card-sh: 0 1px 3px rgba(0,0,0,0.08);
+    --inv-sidebar-w: 220px; --inv-header-h: 56px;
+  }
+
+  /* Chrome hidden until built/enabled */
+  .inv-shell, .inv-sidebar, .inv-header, .inv-breadcrumb, .inv-search-results,
+  .inv-notif, .inv-notif-scrim, .inv-tip { display: none; }
+  .inv-toggle-ctl { display: none; }
+  body.dev-ready .inv-toggle-ctl { display: inline-flex; }
+
+  /* Smooth theme transition */
+  body { transition: background-color 0.3s ease, color 0.3s ease; }
+
+  /* ---- token remap when Inventory+ Mode is ON ---- */
+  body.inv-on {
+    --navy: #FFFFFF; --navy-2: #FFFFFF; --navy-3: #F8FAFC;
+    --teal: #0066CC; --mint: #0066CC;
+    --mint-soft: #EAF3FF; --teal-soft: #EAF3FF;
+    --ink: #1A202C; --muted: #64748B;
+    --line: #E2E8F0;
+    --danger: #DC2626; --danger-soft: #FEE2E2;
+    --amber: #F59E0B; --amber-soft: #FEF3C7;
+    --stage-2: #0066CC;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+    --radius: 8px; --radius-sm: 6px;
+    background: #FFFFFF;
+    color: var(--sol-ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+
+  /* Original dark navbar + mobile menu + cmdk button give way to the Inventory+ chrome */
+  body.inv-on > nav.nav { display: none; }
+  body.inv-on #mobileMenu { display: none !important; }
+
+  /* Reveal Inventory+ chrome */
+  body.inv-on .inv-shell { display: block; }
+  body.inv-on .inv-sidebar { display: flex; }
+  body.inv-on .inv-header { display: flex; }
+  body.inv-on .inv-breadcrumb { display: flex; }
+
+  /* Shift the whole content area for the sidebar + header */
+  body.inv-on .wrap {
+    margin-left: var(--inv-sidebar-w);
+    padding: 0 24px 60px;
+    max-width: none;
+    animation: none;
+  }
+  body.inv-on .dev-statusbar { margin-left: var(--inv-sidebar-w); top: var(--inv-header-h); }
+
+  /* ---- Fixed left sidebar ---- */
+  .inv-sidebar {
+    position: fixed; top: 0; left: 0; bottom: 0; width: var(--inv-sidebar-w); z-index: 60;
+    flex-direction: column; background: var(--sol-sidebar); color: #C7D2E0;
+    padding: 0 0 16px; overflow-y: auto;
+    transform: translateX(-8px); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+  body.inv-on .inv-sidebar { transform: translateX(0); opacity: 1; }
+  .inv-sb-brand { display: flex; align-items: center; gap: 10px; height: var(--inv-header-h); padding: 0 16px; border-bottom: 1px solid rgba(255,255,255,0.08); flex: none; }
+  .inv-sb-brand .s-mark { width: 28px; height: 28px; border-radius: 6px; background: var(--sol-blue); color: #fff; font-weight: 800; font-size: 16px; display: grid; place-items: center; }
+  .inv-sb-brand .s-txt { font-weight: 600; font-size: 14px; color: #fff; }
+  .inv-sb-brand .s-txt small { display: block; font-size: 10px; color: #8A9CB5; font-weight: 500; }
+  .inv-sb-group { padding: 14px 0 4px; }
+  .inv-sb-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6B7C93; padding: 0 16px 6px; }
+  .inv-sb-item { display: flex; align-items: center; gap: 10px; padding: 9px 16px; font-size: 13px; color: #C7D2E0; cursor: pointer; border-left: 3px solid transparent; transition: background 0.15s ease, color 0.15s ease; user-select: none; }
+  .inv-sb-item .sb-ic { width: 18px; text-align: center; font-size: 14px; opacity: 0.9; }
+  .inv-sb-item:hover { background: var(--sol-sidebar-hover); color: #fff; }
+  .inv-sb-item.active { background: var(--sol-blue); color: #fff; border-left-color: #fff; font-weight: 600; }
+  .inv-sb-item .sb-ai { width: 6px; height: 6px; border-radius: 50%; background: #02C39A; margin-left: auto; box-shadow: 0 0 0 3px rgba(2,195,154,0.18); }
+  .inv-sb-item.active .sb-ai { box-shadow: 0 0 0 3px rgba(255,255,255,0.25); }
+  .inv-sb-item .sb-badge { margin-left: auto; font-size: 10px; font-weight: 700; background: rgba(255,255,255,0.12); color: #D7E0EC; padding: 1px 7px; border-radius: 999px; }
+  .inv-sb-item .sb-ai + .sb-badge { margin-left: 8px; }
+
+  /* ---- Top header ---- */
+  .inv-header {
+    position: fixed; top: 0; left: var(--inv-sidebar-w); right: 0; height: var(--inv-header-h); z-index: 58;
+    align-items: center; gap: 16px; padding: 0 20px; background: #fff; border-bottom: 1px solid var(--sol-line);
+  }
+  .inv-hd-brand { display: flex; align-items: center; gap: 8px; font-size: 14px; white-space: nowrap; }
+  .inv-hd-brand b { color: var(--sol-ink); font-weight: 600; font-size: 15px; }
+  .inv-hd-brand .sep { color: #CBD5E1; }
+  .inv-hd-brand .viq { color: var(--sol-blue); font-weight: 600; }
+  .inv-search-wrap { position: relative; flex: 1; max-width: 520px; margin: 0 auto; }
+  .inv-search { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; background: var(--sol-hover); border: 1px solid var(--sol-line); border-radius: 8px; }
+  .inv-search:focus-within { border-color: var(--sol-blue); box-shadow: 0 0 0 3px rgba(0,102,204,0.12); background: #fff; }
+  .inv-search input { flex: 1; border: none; background: transparent; outline: none; font: inherit; font-size: 13px; color: var(--sol-ink); }
+  .inv-search .si { color: var(--sol-muted); font-size: 14px; }
+  .inv-search-results { position: absolute; top: 44px; left: 0; right: 0; background: #fff; border: 1px solid var(--sol-line); border-radius: 10px; box-shadow: 0 12px 32px rgba(15,23,42,0.16); max-height: 60vh; overflow-y: auto; padding: 6px; z-index: 70; }
+  body.inv-on .inv-search-results.show { display: block; }
+  .inv-sr-group { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--sol-muted); font-weight: 700; padding: 10px 10px 4px; }
+  .inv-sr-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 7px; cursor: pointer; font-size: 13px; color: var(--sol-ink); }
+  .inv-sr-item:hover { background: var(--sol-hover); }
+  .inv-sr-item .sr-ic { width: 26px; height: 26px; border-radius: 6px; background: #EAF3FF; color: var(--sol-blue); display: grid; place-items: center; font-size: 13px; flex: none; }
+  .inv-sr-item .sr-sub { color: var(--sol-muted); font-size: 11px; margin-left: auto; font-variant-numeric: tabular-nums; }
+  .inv-sr-empty { padding: 18px; text-align: center; color: var(--sol-muted); font-size: 13px; }
+  .inv-hd-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+  .inv-ic-btn { position: relative; width: 34px; height: 34px; border-radius: 7px; border: 1px solid var(--sol-line); background: #fff; color: var(--sol-muted); cursor: pointer; display: grid; place-items: center; font-size: 15px; transition: background 0.15s ease; }
+  .inv-ic-btn:hover { background: var(--sol-hover); color: var(--sol-ink); }
+  .inv-ic-btn .bell-badge { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: var(--sol-red); color: #fff; font-size: 10px; font-weight: 700; display: grid; place-items: center; }
+  .inv-dealer { display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 10px; border: 1px solid var(--sol-line); border-radius: 7px; background: #fff; cursor: pointer; font-size: 12.5px; color: var(--sol-ink); white-space: nowrap; }
+  .inv-dealer:hover { background: var(--sol-hover); }
+  .inv-dealer .dl-ic { color: var(--sol-blue); }
+  .inv-dealer .dl-cv { color: var(--sol-muted); font-size: 10px; }
+  .inv-dealer select { border: none; background: transparent; font: inherit; font-size: 12.5px; color: var(--sol-ink); outline: none; cursor: pointer; max-width: 190px; }
+  .inv-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--sol-blue); color: #fff; font-weight: 700; font-size: 12px; display: grid; place-items: center; flex: none; }
+  .inv-hd-toggle { display: inline-flex; }
+
+  /* ---- Breadcrumb + page title band ---- */
+  body.inv-on .wrap { padding-top: calc(var(--inv-header-h) + 0px); }
+  .inv-breadcrumb {
+    position: sticky; top: var(--inv-header-h); z-index: 40;
+    align-items: center; gap: 8px; height: 34px; margin: 0 -24px 16px; padding: 0 24px;
+    background: #fff; border-bottom: 1px solid var(--sol-line-soft); font-size: 12px; color: var(--sol-muted);
+  }
+  .inv-breadcrumb .bc-sep { color: #CBD5E1; }
+  .inv-breadcrumb .bc-viq { color: var(--sol-blue); font-weight: 600; }
+  .inv-breadcrumb .bc-cur { color: var(--sol-ink); font-weight: 600; }
+  body.dev-on.inv-on .inv-breadcrumb { top: calc(var(--inv-header-h) + 37px); }
+
+  /* Sidebar collapse on small screens */
+  .inv-burger { display: none; }
+  @media (max-width: 900px) {
+    body.inv-on .wrap, body.inv-on .dev-statusbar { margin-left: 0; }
+    body.inv-on .inv-header { left: 0; }
+    .inv-sidebar { transform: translateX(-100%); box-shadow: 0 0 40px rgba(0,0,0,0.4); }
+    body.inv-on .inv-sidebar { transform: translateX(-100%); }
+    body.inv-on.inv-nav-open .inv-sidebar { transform: translateX(0); }
+    .inv-burger { display: grid; }
+  }
+
+  /* ============================================================
+     INVENTORY+ MODE — component reskin (scoped body.inv-on)
+     ============================================================ */
+  body.inv-on .page-head h1 { font-size: 20px; font-weight: 600; color: var(--sol-ink); }
+  body.inv-on .page-head p { color: var(--sol-muted); font-size: 13px; }
+  body.inv-on .eyebrow { color: var(--sol-muted); }
+
+  /* Cards */
+  body.inv-on .card {
+    background: #fff; border: 1px solid var(--sol-line); border-radius: 8px; box-shadow: var(--sol-card-sh); color: var(--sol-body);
+  }
+  body.inv-on .hero, body.inv-on .plan-head, body.inv-on .about-hero, body.inv-on .calc-out, body.inv-on .fp-strip, body.inv-on .age-bucket, body.inv-on .aiw-card, body.inv-on .feature-card, body.inv-on .vehicle, body.inv-on .hist-row, body.inv-on .brief-mail {
+    background: #fff !important; border-color: var(--sol-line) !important; color: var(--sol-body);
+  }
+  body.inv-on .hero .lead h2, body.inv-on .prop h3, body.inv-on .feature-card h3, body.inv-on .aiw-card h4 { color: var(--sol-ink); }
+
+  /* Fix gradient-clipped text (was white→mint on dark) → solid dark on white */
+  body.inv-on .fp-amount, body.inv-on .result-big .money, body.inv-on .about-hero h1 {
+    background: none !important; -webkit-background-clip: border-box !important; background-clip: border-box !important;
+    -webkit-text-fill-color: currentColor; color: var(--sol-ink) !important;
+  }
+  body.inv-on .fp-amount { color: var(--sol-blue) !important; }
+  body.inv-on .stat .value, body.inv-on .plan-head .big { color: var(--sol-ink); }
+  body.inv-on .stat .value { font-size: 28px; font-weight: 700; }
+  body.inv-on .stat .delta { color: var(--sol-green); }
+  body.inv-on .stat .delta.down { color: var(--sol-amber); }
+  body.inv-on .stat .icon { background: #EAF3FF; }
+
+  /* Buttons */
+  body.inv-on .btn {
+    background: var(--sol-blue); color: #fff; border-radius: 6px; box-shadow: none; font-size: 14px; font-weight: 600; padding: 8px 16px;
+  }
+  body.inv-on .btn:hover { background: var(--sol-blue-d); transform: none; filter: none; }
+  body.inv-on .btn:active { transform: scale(0.98); }
+  body.inv-on .btn.ghost { background: #fff; border: 1px solid var(--sol-line); color: var(--sol-body); }
+  body.inv-on .btn.ghost:hover { background: var(--sol-hover); }
+  body.inv-on .btn.sm { font-size: 13px; padding: 6px 12px; }
+
+  /* Inputs / selects */
+  body.inv-on select, body.inv-on input[type="text"], body.inv-on input[type="number"] {
+    background: #fff; color: var(--sol-ink); border: 1px solid var(--sol-line); border-radius: 8px; font-size: 13px; min-height: 36px;
+  }
+  body.inv-on select:focus, body.inv-on input:focus { border-color: var(--sol-blue); box-shadow: 0 0 0 3px rgba(0,102,204,0.12); }
+  body.inv-on label.fld .lname { color: var(--sol-muted); font-size: 12px; font-weight: 500; }
+
+  /* Tables — Inventory+ style */
+  body.inv-on table.tbl thead th, body.inv-on .cmp-tbl thead th, body.inv-on .devc-mon th {
+    background: var(--sol-hover); color: var(--sol-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; height: 40px; border-bottom: 1px solid var(--sol-line);
+  }
+  body.inv-on table.tbl td, body.inv-on .cmp-tbl td, body.inv-on .devc-mon td {
+    color: var(--sol-ink); font-size: 13px; border-bottom: 1px solid var(--sol-line-soft); height: 48px;
+  }
+  body.inv-on table.tbl tbody tr:hover, body.inv-on .devc-mon tbody tr:hover { background: var(--sol-hover); }
+  body.inv-on .cmp-tbl .cmp-us { background: #EAF3FF; color: var(--sol-ink); }
+  body.inv-on .toolbar { color: var(--sol-body); }
+
+  /* Toolbars / filter bars */
+  body.inv-on .stage-legend, body.inv-on .fp-label, body.inv-on .fp-sub, body.inv-on .veh-vin, body.inv-on .cust-info .sr, body.inv-on .ftime, body.inv-on .hint, body.inv-on .brief-date { color: var(--sol-muted); }
+
+  /* Status pills / badges */
+  body.inv-on .badge, body.inv-on .role-badge, body.inv-on .src-pill, body.inv-on .ready-tag, body.inv-on .about-tag { border-radius: 999px; font-weight: 600; }
+  body.inv-on .badge.ready { background: #DCFCE7; color: #166534; }
+  body.inv-on .badge.ok { background: #EAF3FF; color: #1E40AF; }
+  body.inv-on .badge.delay { background: #FEE2E2; color: #991B1B; }
+  body.inv-on .ready-tag { background: #DCFCE7; color: #166534; }
+  body.inv-on .src-pill { background: #EAF3FF; color: #1E40AF; }
+  body.inv-on .src-pill.crm { background: #E7F8F1; color: #0F7A5A; }
+  body.inv-on .lock.locked { color: #B45309; }
+  body.inv-on .lock.unlocked { color: #166534; }
+  body.inv-on .role-gm { background: #EAF3FF; color: #1E40AF; }
+  body.inv-on .warn-banner { background: #FEF3C7; border-color: #FCD34D; color: #92400E; }
+  body.inv-on .note-chip, body.inv-on .ai-note, body.inv-on .readonly-note { background: #EAF3FF; color: var(--sol-blue); }
+
+  /* Recon stage segments keep intent, softened for light bg */
+  body.inv-on .seg { background: #EDF1F7; }
+  body.inv-on .stage-labels span.on { color: var(--sol-blue); }
+  body.inv-on .timeline .tl-dot { background: var(--sol-blue); box-shadow: 0 0 0 4px #EAF3FF; }
+
+  /* Feed dots + misc */
+  body.inv-on .feed li, body.inv-on .briefing li, body.inv-on .brief-list li, body.inv-on .result-row { border-color: var(--sol-line-soft); }
+  body.inv-on .bullet-dot, body.inv-on .brief-num, body.inv-on .count-badge, body.inv-on .avatar, body.inv-on .roi-chip { background: var(--sol-blue); color: #fff; }
+  body.inv-on .score .pct { color: var(--sol-blue); }
+  body.inv-on .score .bar > i, body.inv-on .progress-track > i, body.inv-on .bar-col .fill, body.inv-on .aip-wbar > i, body.inv-on .aipp-bar > i, body.inv-on .ab-bar > i { background: var(--sol-blue); }
+
+  /* "Powered by VelocityIQ AI" tag shown on AI sections in Inventory+ Mode */
+  .inv-ai-tag { display: none; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: var(--sol-blue); background: #EAF3FF; padding: 3px 9px; border-radius: 999px; margin-left: 8px; }
+  body.inv-on .inv-ai-tag { display: inline-flex; }
+
+  /* Inline AI info icon + plain-English tooltip */
+  .inv-ai-i { display: none; width: 15px; height: 15px; border-radius: 50%; border: 1px solid var(--sol-blue); color: var(--sol-blue); font-size: 10px; font-weight: 700; line-height: 13px; text-align: center; margin-left: 5px; cursor: help; vertical-align: middle; }
+  body.inv-on .inv-ai-i { display: inline-block; }
+  .inv-tip { position: fixed; z-index: 95; max-width: 280px; padding: 10px 12px; border-radius: 8px; background: #fff; border: 1px solid var(--sol-line); box-shadow: 0 12px 30px rgba(15,23,42,0.18); font-size: 12px; color: var(--sol-body); line-height: 1.5; }
+  body.inv-on .inv-tip.show { display: block; }
+  .inv-tip b { color: var(--sol-ink); }
+
+  /* Notification drawer */
+  .inv-notif-scrim { position: fixed; inset: 0; background: rgba(15,23,42,0.28); z-index: 96; }
+  body.inv-on .inv-notif-scrim.show { display: block; animation: pageFade 0.2s ease both; }
+  .inv-notif {
+    position: fixed; top: 0; right: 0; bottom: 0; width: min(380px, 94vw); z-index: 97; flex-direction: column;
+    background: #fff; border-left: 1px solid var(--sol-line); box-shadow: -20px 0 50px rgba(15,23,42,0.2);
+    transform: translateX(102%); transition: transform 0.3s ease;
+  }
+  body.inv-on .inv-notif.show { display: flex; transform: translateX(0); }
+  .inv-notif-head { display: flex; align-items: center; gap: 10px; padding: 16px; border-bottom: 1px solid var(--sol-line); font-size: 15px; font-weight: 600; color: var(--sol-ink); }
+  .inv-notif-head .nh-close { margin-left: auto; border: none; background: transparent; font-size: 20px; color: var(--sol-muted); cursor: pointer; }
+  .inv-notif-body { flex: 1; overflow-y: auto; padding: 8px 0; }
+  .inv-notif-grp { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--sol-muted); padding: 12px 16px 4px; }
+  .inv-notif-item { display: flex; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--sol-line-soft); cursor: pointer; }
+  .inv-notif-item:hover { background: var(--sol-hover); }
+  .inv-notif-item .ni-ic { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; font-size: 15px; flex: none; background: #EAF3FF; position: relative; }
+  .inv-notif-item .ni-ic .ni-ai { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; border-radius: 50%; background: #02C39A; border: 1.5px solid #fff; }
+  .inv-notif-item .ni-t { font-size: 13px; font-weight: 600; color: var(--sol-ink); }
+  .inv-notif-item .ni-d { font-size: 12px; color: var(--sol-muted); margin-top: 2px; line-height: 1.45; }
+  .inv-notif-item .ni-meta { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+  .inv-notif-item .ni-time { font-size: 11px; color: #94A3B8; }
+  .inv-notif-item .ni-view { font-size: 11px; font-weight: 600; color: var(--sol-blue); }
+
+  /* Developer Inspector → light glassmorphism in Inventory+ Mode */
+  body.inv-on .dvi { background: rgba(255,255,255,0.96); border-left: 1px solid var(--sol-line); color: var(--sol-ink); backdrop-filter: blur(14px); }
+  body.inv-on .dvi-head, body.inv-on .dvi-tabs { border-color: var(--sol-line); background: rgba(248,250,252,0.9); }
+  body.inv-on .dvi-tab { color: var(--sol-muted); }
+  body.inv-on .dvi-tab.on { background: var(--sol-blue); color: #fff; }
+  body.inv-on .dvi-head .dh-name, body.inv-on .dvi-kv .v, body.inv-on .dvi-metric .m-v { color: var(--sol-ink); }
+  body.inv-on .dvi-head .dh-sub, body.inv-on .dvi-kv .k, body.inv-on .dvi-metric .m-l { color: var(--sol-muted); }
+  body.inv-on .dvi-search, body.inv-on .dvi-tag, body.inv-on .dvi-api .da-head, body.inv-on .dvi-flow-node { background: #fff; border-color: var(--sol-line); }
+  body.inv-on .dvi-json { background: #F8FAFC; border-color: var(--sol-line); color: #334155; }
+  body.inv-on .jk-key { color: #0550AE; } body.inv-on .jk-str { color: #0F7A5A; } body.inv-on .jk-num { color: #B45309; }
+  body.inv-on .dev-statusbar { background: rgba(248,250,252,0.96); border-color: var(--sol-line); color: var(--sol-muted); }
+  body.inv-on .dev-statusbar b { color: var(--sol-ink); }
+  body.inv-on .hpop, body.inv-on .pmap, body.inv-on .mmap { background: rgba(255,255,255,0.97); border-color: var(--sol-line); color: var(--sol-ink); box-shadow: 0 16px 40px rgba(15,23,42,0.18); }
+  body.inv-on .hpop .hp-row, body.inv-on .hpop .hp-name, body.inv-on .mmap .mm-node { color: var(--sol-ink); }
+  body.inv-on .arch-overlay { background: linear-gradient(0deg, rgba(255,255,255,0.97) 70%, transparent); border-color: var(--sol-line); }
+  body.inv-on .arch-node, body.inv-on .devc-node, body.inv-on .reqlog { background: #fff; border-color: var(--sol-line); color: var(--sol-ink); }
+  body.inv-on .reqlog { background: #F8FAFC; }
+
+  /* Modal + command palette light */
+  body.inv-on .modal, body.inv-on .cmdk-box { background: #fff; border-color: var(--sol-line); color: var(--sol-ink); }
+  body.inv-on .cmdk-box > input { color: var(--sol-ink); border-color: var(--sol-line); }
+  body.inv-on .cmdk-item .ci-t { color: var(--sol-ink); }
+
+  /* Inventory+ Mode toggle track uses Solera blue */
+  #invModeToggle.on .dt-track { background: var(--sol-blue); }
+  #invModeToggle.on .dt-track::after { background: #fff; }
 </style>
 </head>
 <body>
@@ -951,6 +1238,9 @@
     </div>
 
     <div class="dev-controls">
+      <label class="dev-toggle inv-toggle-ctl" id="invModeToggle" title="View VelocityIQ as a native Solera Inventory+ module">
+        <span class="dt-track"></span><span class="dt-label">Inventory+ Mode</span>
+      </label>
       <label class="dev-toggle" id="devModeToggle" title="Toggle Engineering Inspection Mode">
         <span class="dt-track"></span><span class="dt-label">Developer Mode</span>
       </label>
@@ -3340,6 +3630,355 @@
     /* restore persisted preference */
     let restore = "0"; try { restore = localStorage.getItem("viq_dev_mode") || "0"; } catch (e) { }
     if (restore === "1") setDevMode(true);
+  })();
+
+  /* ============================================================
+     INVENTORY+ MODE — Solera frontend parity layer.
+     Additive: reuses showPage / units / toast / alertData / activity
+     from the main closure. Inert until the Inventory+ Mode toggle is ON.
+     ============================================================ */
+  (function invSuite() {
+    "use strict";
+    let invOn = false, curDealer = 0;
+    const iel = html => { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; };
+    const iesc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    const DEALERS = [
+      { name: "Sunset Toyota", city: "Los Angeles, CA", seed: 3 },
+      { name: "Metro Honda", city: "Dallas, TX", seed: 7 },
+      { name: "Gateway Ford", city: "Chicago, IL", seed: 5 },
+      { name: "Coastal Auto Group", city: "Miami, FL", seed: 9 },
+      { name: "Summit Motors", city: "Seattle, WA", seed: 4 }
+    ];
+
+    /* page id → friendly title for breadcrumb + header */
+    const PAGE_TITLE = {
+      overview: "Dashboard", alerts: "Alerts Center", units: "Recon Tracker",
+      scan: "Scan New VIN", assign: "Vendor Assignment", matches: "Customer Match",
+      bridge: "CRM Data Bridge", conversion: "Conversion Analytics", brief: "GM Briefing",
+      history: "Briefing History", scorecard: "Vendor Reports", floorplan: "Floorplan Rate",
+      roles: "User Roles", billing: "Subscription & Billing", about: "About",
+      devcenter: "Developer Center", invmod: "Inventory+ Module"
+    };
+    /* which pages are VelocityIQ-AI powered (get the "Powered by" tag + mint dot) */
+    const AI_PAGES = { units: 1, scan: 1, assign: 1, matches: 1, bridge: 1, conversion: 1, brief: 1, history: 1, scorecard: 1, overview: 1 };
+
+    /* Sidebar model. real:pageId routes via showPage; mod:"Name" opens the
+       shared Inventory+ standard-module placeholder. ai flags the mint dot. */
+    const SIDEBAR = [
+      { label: "Inventory", items: [
+        { t: "Dashboard", ic: "▦", real: "overview" },
+        { t: "Vehicle List", ic: "🚗", mod: "Vehicle List" },
+        { t: "Aged Units", ic: "⏳", mod: "Aged Units" },
+        { t: "Wholesale", ic: "🏷️", mod: "Wholesale" }
+      ]},
+      { label: "VelocityIQ AI", items: [
+        { t: "Recon Tracker", ic: "🔧", real: "units", ai: 1 },
+        { t: "Customer Match", ic: "🤝", real: "matches", ai: 1 },
+        { t: "GM Briefing", ic: "🧠", real: "brief", ai: 1 },
+        { t: "Vendor Reports", ic: "🏆", real: "scorecard", ai: 1 }
+      ]},
+      { label: "Operations", items: [
+        { t: "Appraisals", ic: "📋", mod: "Appraisals" },
+        { t: "Reconditioning", ic: "🛠️", real: "scan" },
+        { t: "Pricing", ic: "💲", real: "floorplan" },
+        { t: "Merchandising", ic: "📸", mod: "Merchandising" }
+      ]},
+      { label: "Analytics", items: [
+        { t: "Reports", ic: "📊", real: "conversion" },
+        { t: "Market Data", ic: "📈", mod: "Market Data" },
+        { t: "ROI Calculator", ic: "🧮", real: "floorplan" }
+      ]},
+      { label: "Admin", items: [
+        { t: "Settings", ic: "⚙️", real: "floorplan" },
+        { t: "Users", ic: "👥", real: "roles" },
+        { t: "Developer Center", ic: "🛠️", real: "devcenter", dev: 1 }
+      ]}
+    ];
+
+    /* ---- build sidebar ---- */
+    const sidebar = iel('<aside class="inv-sidebar" id="invSidebar"></aside>');
+    let sbHtml = '<div class="inv-sb-brand"><span class="s-mark">S</span><span class="s-txt">Inventory+<small>Solera</small></span></div>';
+    SIDEBAR.forEach((g, gi) => {
+      sbHtml += '<div class="inv-sb-group"><div class="inv-sb-label">' + g.label + '</div>';
+      g.items.forEach((it, ii) => {
+        const dot = it.ai ? '<span class="sb-ai"></span>' : '';
+        const cls = it.dev ? ' inv-sb-dev' : '';
+        sbHtml += '<div class="inv-sb-item' + cls + '" data-g="' + gi + '" data-i="' + ii + '"><span class="sb-ic">' + it.ic + '</span><span>' + it.t + '</span>' + dot + '</div>';
+      });
+      sbHtml += '</div>';
+    });
+    sidebar.innerHTML = sbHtml;
+
+    /* ---- build header ---- */
+    const header = iel(
+      '<header class="inv-header" id="invHeader">' +
+        '<button class="inv-ic-btn inv-burger" id="invBurger" title="Menu">☰</button>' +
+        '<div class="inv-hd-brand"><span class="s-mark" style="width:26px;height:26px;border-radius:6px;background:#0066CC;color:#fff;font-weight:800;display:grid;place-items:center;font-size:14px;">S</span>' +
+          '<b>Inventory+</b><span class="sep">/</span><span class="viq">VelocityIQ</span></div>' +
+        '<div class="inv-search-wrap">' +
+          '<div class="inv-search"><span class="si">🔎</span><input id="invSearch" placeholder="Search vehicles, customers, VINs..." autocomplete="off" /></div>' +
+          '<div class="inv-search-results" id="invSearchResults"></div>' +
+        '</div>' +
+        '<div class="inv-hd-right">' +
+          '<label class="dev-toggle inv-hd-toggle" id="invDevToggle" title="Developer Mode (engineer role)"><span class="dt-track"></span><span class="dt-label" style="font-size:0.7rem;">Dev</span></label>' +
+          '<button class="inv-ic-btn" id="invBell" title="Notifications">🔔<span class="bell-badge" id="invBellCount">0</span></button>' +
+          '<button class="inv-ic-btn" id="invHelp" title="Help">?</button>' +
+          '<div class="inv-dealer" id="invDealer"><span class="dl-ic">📍</span><select id="invDealerSel" aria-label="Dealer"></select></div>' +
+          '<span class="inv-avatar" title="Dana Whitfield · GM">DW</span>' +
+        '</div>' +
+      '</header>');
+
+    /* ---- breadcrumb band ---- */
+    const breadcrumb = iel('<div class="inv-breadcrumb" id="invBreadcrumb"></div>');
+
+    /* ---- notification drawer + scrim ---- */
+    const notifScrim = iel('<div class="inv-notif-scrim" id="invNotifScrim"></div>');
+    const notif = iel(
+      '<aside class="inv-notif" id="invNotif">' +
+        '<div class="inv-notif-head">🔔 Notifications<button class="nh-close" id="invNotifClose">×</button></div>' +
+        '<div class="inv-notif-body" id="invNotifBody"></div>' +
+      '</aside>');
+
+    /* ---- AI plain-English tooltip ---- */
+    const tip = iel('<div class="inv-tip" id="invTip"></div>');
+
+    document.body.append(sidebar, header, breadcrumb, notifScrim, notif, tip);
+
+    /* shared placeholder page for decorative Inventory+ modules */
+    const wrap = document.querySelector(".wrap");
+    const invmod = iel('<section class="page" id="invmod"><div class="page-head"><h1 id="invmodTitle">Inventory+ Module</h1><p id="invmodDesc"></p></div><div id="invmodBody"></div></section>');
+    if (wrap) wrap.appendChild(invmod);
+
+    /* populate dealer selector */
+    const dealerSel = document.getElementById("invDealerSel");
+    dealerSel.innerHTML = DEALERS.map((d, i) => '<option value="' + i + '">' + iesc(d.name) + ' — ' + iesc(d.city) + '</option>').join("");
+
+    /* ============================================================
+       ROUTING — sidebar clicks + breadcrumb + active state
+       ============================================================ */
+    function currentPage() { const a = document.querySelector(".page.active"); return a ? a.id : "overview"; }
+    function openStdModule(name) {
+      document.getElementById("invmodTitle").textContent = name;
+      document.getElementById("invmodDesc").textContent = "Standard Solera Inventory+ module. VelocityIQ AI extends the modules marked with a mint dot in the sidebar.";
+      const seed = DEALERS[curDealer].seed;
+      const rows = [];
+      const kinds = { "Vehicle List": "vehicle", "Aged Units": "aged", "Wholesale": "wholesale", "Appraisals": "appraisal", "Merchandising": "listing", "Market Data": "market" };
+      const kind = kinds[name] || "record";
+      for (let i = 0; i < 6; i++) rows.push('<tr><td>INV-' + (1000 + seed * 13 + i * 7) + '</td><td>' + name + ' record ' + (i + 1) + '</td><td><span class="badge ok">Active</span></td><td style="text-align:right; color:var(--sol-muted);">Updated ' + (i + 1) + 'd ago</td></tr>');
+      document.getElementById("invmodBody").innerHTML =
+        '<div class="card"><div class="eyebrow">' + iesc(name) + ' · ' + iesc(DEALERS[curDealer].name) + '</div>' +
+        '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>ID</th><th>Description</th><th>Status</th><th style="text-align:right;">Last activity</th></tr></thead><tbody>' + rows.join("") + '</tbody></table></div>' +
+        '<div style="margin-top:12px; color:var(--sol-muted); font-size:12px;">This is a representative view of the standard Inventory+ <b>' + iesc(name) + '</b> module (' + kind + ' data). In production this renders the live Inventory+ component.</div></div>';
+      route("invmod");
+    }
+    function route(id) { showPage(id); }
+    function syncSidebar() {
+      const cur = currentPage();
+      Array.prototype.forEach.call(sidebar.querySelectorAll(".inv-sb-item"), item => {
+        const g = +item.dataset.g, i = +item.dataset.i, def = SIDEBAR[g].items[i];
+        const on = def.real === cur || (cur === "invmod" && def.mod && def.mod === document.getElementById("invmodTitle").textContent);
+        item.classList.toggle("active", !!on);
+      });
+      // hide Developer Center sidebar item unless Developer Mode is ON
+      const devItem = sidebar.querySelector(".inv-sb-dev");
+      if (devItem) devItem.style.display = document.body.classList.contains("dev-on") ? "flex" : "none";
+    }
+    function syncBreadcrumb() {
+      const cur = currentPage(), title = PAGE_TITLE[cur] || "Overview";
+      const isAI = AI_PAGES[cur];
+      breadcrumb.innerHTML = '<span>Inventory+</span>' + (isAI ? '<span class="bc-sep">›</span><span class="bc-viq">VelocityIQ</span>' : '') +
+        '<span class="bc-sep">›</span><span class="bc-cur">' + iesc(title) + '</span>' +
+        '<span style="margin-left:auto; color:var(--sol-muted); font-size:11px;">📍 ' + iesc(DEALERS[curDealer].name) + '</span>';
+    }
+    sidebar.addEventListener("click", function (e) {
+      const item = e.target.closest(".inv-sb-item"); if (!item) return;
+      const def = SIDEBAR[+item.dataset.g].items[+item.dataset.i];
+      document.body.classList.remove("inv-nav-open");
+      if (def.dev && !document.body.classList.contains("dev-on")) { const t = document.getElementById("devModeToggle"); if (t) t.click(); }
+      if (def.real) route(def.real);
+      else if (def.mod) openStdModule(def.mod);
+    });
+
+    /* wrap showPage so Inventory+ chrome follows navigation */
+    const _showPageInv = showPage;
+    showPage = function (id) {
+      _showPageInv(id);
+      if (invOn) { syncSidebar(); syncBreadcrumb(); decorateAI(); closeSearch(); }
+    };
+
+    /* ============================================================
+       GLOBAL SEARCH — vehicles + customers + vendors
+       ============================================================ */
+    const searchInput = document.getElementById("invSearch");
+    const searchResults = document.getElementById("invSearchResults");
+    function closeSearch() { searchResults.classList.remove("show"); }
+    function customerPool() {
+      const out = [];
+      Object.keys(customersByUnit).forEach(unit => customersByUnit[unit].forEach(c => out.push({ n: c.n, src: c.src, unit })));
+      units.filter(isReady).forEach(u => getCustomers(u).forEach(c => { if (!out.some(x => x.n === c.n)) out.push({ n: c.n, src: c.src, unit: u.name }); }));
+      return out;
+    }
+    function runSearch(q) {
+      q = (q || "").toLowerCase().trim();
+      if (!q) { closeSearch(); return; }
+      const veh = units.filter(u => (u.name + " " + u.vin).toLowerCase().includes(q)).slice(0, 5);
+      const cus = customerPool().filter(c => c.n.toLowerCase().includes(q)).slice(0, 5);
+      const ven = Array.from(new Set(vendorNames)).filter(v => v.toLowerCase().includes(q)).slice(0, 5);
+      let h = "";
+      if (veh.length) h += '<div class="inv-sr-group">Vehicles</div>' + veh.map(u => '<div class="inv-sr-item" data-nav="' + (isReady(u) ? "matches" : "units") + '" data-uid="' + u.id + '"><span class="sr-ic">🚗</span><div><div>' + iesc(u.name) + '</div></div><span class="sr-sub">VIN ' + u.vin.slice(-6) + '</span></div>').join("");
+      if (cus.length) h += '<div class="inv-sr-group">Customers</div>' + cus.map(c => '<div class="inv-sr-item" data-nav="matches"><span class="sr-ic">👤</span><div><div>' + iesc(c.n) + '</div></div><span class="sr-sub">' + iesc(c.src) + ' · ' + iesc(c.unit) + '</span></div>').join("");
+      if (ven.length) h += '<div class="inv-sr-group">Vendors</div>' + ven.map(v => '<div class="inv-sr-item" data-nav="scorecard"><span class="sr-ic">🏢</span><div><div>' + iesc(v) + '</div></div><span class="sr-sub">Vendor</span></div>').join("");
+      searchResults.innerHTML = h || '<div class="inv-sr-empty">No results for "' + iesc(q) + '"</div>';
+      searchResults.classList.add("show");
+    }
+    searchInput.addEventListener("input", function () { runSearch(this.value); });
+    searchInput.addEventListener("focus", function () { if (this.value) runSearch(this.value); });
+    searchResults.addEventListener("click", function (e) {
+      const it = e.target.closest(".inv-sr-item"); if (!it) return;
+      const nav = it.dataset.nav, uid = it.dataset.uid;
+      route(nav); closeSearch(); searchInput.value = "";
+      if (uid) setTimeout(() => {
+        const card = document.querySelector('.vehicle[data-id="' + uid + '"]') || document.querySelector('.match-card');
+        if (card) { card.scrollIntoView({ behavior: "smooth", block: "center" }); card.style.outline = "2px solid var(--sol-blue)"; setTimeout(() => card.style.outline = "", 1600); }
+      }, 260);
+    });
+    document.addEventListener("click", function (e) { if (!e.target.closest(".inv-search-wrap")) closeSearch(); });
+
+    /* ============================================================
+       NOTIFICATION DRAWER — grouped Today / Yesterday / This Week
+       ============================================================ */
+    const bell = document.getElementById("invBell");
+    const notifBody = document.getElementById("invNotifBody");
+    function buildNotifications() {
+      const groups = { "Today": [], "Yesterday": [], "This Week": [] };
+      // VelocityIQ alerts (AI) — from existing alertData
+      (typeof alertData !== "undefined" ? alertData : []).forEach(a => groups["Today"].push({ ic: a.ic, t: a.title, d: a.body, time: "Today", ai: 1 }));
+      // Activity feed
+      (typeof activity !== "undefined" ? activity : []).slice(0, 3).forEach(a => groups["Today"].push({ ic: "⚡", t: "Activity", d: a.t, time: a.time + " ago", ai: a.d === "mint" }));
+      groups["Yesterday"].push({ ic: "🧠", t: "GM Briefing ready", d: "Your VelocityIQ morning brief was generated from Inventory+ data.", time: "Yesterday 06:00", ai: 1 });
+      groups["Yesterday"].push({ ic: "🏆", t: "Vendor scorecard updated", d: "Monthly vendor turnaround scores recalculated.", time: "Yesterday 05:30" });
+      groups["This Week"].push({ ic: "🤝", t: "12 new customer matches", d: "CRM-sourced matches fired on front-line-ready units.", time: "Mon", ai: 1 });
+      groups["This Week"].push({ ic: "📈", t: "Weekly report available", d: "Conversion analytics for last week are ready.", time: "Mon" });
+      let count = 0, h = "";
+      Object.keys(groups).forEach(g => {
+        if (!groups[g].length) return;
+        h += '<div class="inv-notif-grp">' + g + '</div>';
+        groups[g].forEach(n => {
+          count += (g === "Today" ? 1 : 0);
+          h += '<div class="inv-notif-item"><div class="ni-ic">' + n.ic + (n.ai ? '<span class="ni-ai"></span>' : '') + '</div>' +
+            '<div style="flex:1;"><div class="ni-t">' + iesc(n.t) + '</div><div class="ni-d">' + iesc(n.d) + '</div>' +
+            '<div class="ni-meta"><span class="ni-time">' + iesc(n.time) + '</span><span class="ni-view">View →</span></div></div></div>';
+        });
+      });
+      notifBody.innerHTML = h;
+      document.getElementById("invBellCount").textContent = count;
+    }
+    function openNotif() { buildNotifications(); notif.classList.add("show"); notifScrim.classList.add("show"); }
+    function closeNotif() { notif.classList.remove("show"); notifScrim.classList.remove("show"); }
+    bell.addEventListener("click", openNotif);
+    document.getElementById("invNotifClose").addEventListener("click", closeNotif);
+    notifScrim.addEventListener("click", closeNotif);
+    notifBody.addEventListener("click", function (e) { if (e.target.closest(".inv-notif-item")) { closeNotif(); route("alerts"); } });
+    document.getElementById("invHelp").addEventListener("click", () => toast("Inventory+ Help Center · VelocityIQ module docs"));
+
+    /* ============================================================
+       DEALER SELECTOR — switches dealer context across the app
+       ============================================================ */
+    dealerSel.addEventListener("change", function () {
+      curDealer = +this.value;
+      syncBreadcrumb();
+      if (currentPage() === "invmod") openStdModule(document.getElementById("invmodTitle").textContent);
+      buildNotifications();
+      toast("Dealer switched to " + DEALERS[curDealer].name + " — data refreshed");
+    });
+    document.getElementById("invBurger").addEventListener("click", () => document.body.classList.toggle("inv-nav-open"));
+
+    /* ---- inject exit + Live Architecture proxy into header right ---- */
+    const hdRight = header.querySelector(".inv-hd-right");
+    const exitBtn = iel('<button class="btn ghost sm" id="invExitBtn" style="height:34px;">✕ Exit Inventory+</button>');
+    const archProxy = iel('<label class="dev-toggle inv-hd-toggle" id="invArchToggle" title="Live Architecture" style="display:none;"><span class="dt-track"></span><span class="dt-label" style="font-size:0.7rem;">Arch</span></label>');
+    hdRight.insertBefore(archProxy, hdRight.firstChild);
+    hdRight.insertBefore(exitBtn, hdRight.firstChild);
+
+    document.getElementById("invDevToggle").addEventListener("click", () => { const t = document.getElementById("devModeToggle"); if (t) t.click(); });
+    archProxy.addEventListener("click", () => { const t = document.getElementById("liveArchToggle"); if (t) t.click(); });
+    exitBtn.addEventListener("click", () => setInvMode(false));
+
+    /* keep Dev / Live-Arch proxies + sidebar in sync with the real toggles */
+    function syncDevProxies() {
+      const dev = document.body.classList.contains("dev-on");
+      document.getElementById("invDevToggle").classList.toggle("on", dev);
+      archProxy.style.display = dev ? "inline-flex" : "none";
+      archProxy.classList.toggle("on", document.body.classList.contains("livearch-on"));
+    }
+    const bodyObs = new MutationObserver(() => { syncDevProxies(); if (invOn) syncSidebar(); });
+    bodyObs.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+
+    /* ============================================================
+       INLINE AI EXPLANATIONS — plain-English tooltips + AI tag
+       ============================================================ */
+    const TIP_PRED = "VelocityIQ predicts this front-line-ready date from four inputs: the selected work type (base estimate), this vendor's recent turnaround history, current queue load, and the day of week the unit was scanned in.";
+    const TIP_MATCH = "This match score blends the shopper's CRM intent profile, how recently they were active, and how closely this specific vehicle fits their saved search — higher means a hotter, same-day-call lead.";
+    const TIP_DELAY = "This unit is flagged because it has spent more days in its current recon stage than the historical average for that stage at this dealership.";
+    function injIcon(target, tipText) {
+      if (!target || target.querySelector(".inv-ai-i")) return;
+      const s = iel('<span class="inv-ai-i">i</span>'); s.setAttribute("data-tip", tipText);
+      target.appendChild(s);
+    }
+    function decorateAI() {
+      if (!invOn) return;
+      const pg = document.querySelector(".page.active"); if (!pg) return;
+      if (AI_PAGES[pg.id]) {
+        const h1 = pg.querySelector(".page-head h1");
+        if (h1 && !h1.querySelector(".inv-ai-tag")) h1.insertAdjacentHTML("beforeend", ' <span class="inv-ai-tag">✦ Powered by VelocityIQ AI</span>');
+      }
+      injIcon(pg.querySelector(".pd-date"), TIP_PRED);
+      injIcon(pg.querySelector(".aipp-date"), TIP_PRED);
+      Array.prototype.forEach.call(pg.querySelectorAll(".score .pct"), n => injIcon(n, TIP_MATCH));
+      Array.prototype.forEach.call(pg.querySelectorAll(".badge.delay"), n => injIcon(n, TIP_DELAY));
+    }
+    document.addEventListener("mouseover", function (e) {
+      if (!invOn) return;
+      const i = e.target.closest(".inv-ai-i"); if (!i) return;
+      tip.innerHTML = "<b>Why this value?</b><br>" + iesc(i.getAttribute("data-tip") || "");
+      const r = i.getBoundingClientRect();
+      tip.style.left = Math.min(r.left, window.innerWidth - 296) + "px";
+      tip.style.top = (r.bottom + 8) + "px";
+      tip.classList.add("show");
+      const b = tip.getBoundingClientRect();
+      if (b.bottom > window.innerHeight) tip.style.top = (r.top - b.height - 8) + "px";
+    });
+    document.addEventListener("mouseout", function (e) { if (e.target.closest(".inv-ai-i")) tip.classList.remove("show"); });
+
+    /* ============================================================
+       TOGGLE — Inventory+ Mode on/off (no reload, keeps page + data)
+       ============================================================ */
+    function setInvMode(on) {
+      invOn = on;
+      document.body.classList.toggle("inv-on", on);
+      const navToggle = document.getElementById("invModeToggle");
+      if (navToggle) navToggle.classList.toggle("on", on);
+      try { localStorage.setItem("viq_inv_mode", on ? "1" : "0"); } catch (e) { }
+      if (on) {
+        dealerSel.value = String(curDealer);
+        syncSidebar(); syncBreadcrumb(); syncDevProxies(); decorateAI(); buildNotifications();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        closeSearch(); closeNotif(); document.body.classList.remove("inv-nav-open");
+      }
+      toast(on ? "Inventory+ Mode ON — VelocityIQ shown as a native Solera module" : "Inventory+ Mode OFF");
+    }
+
+    const invNavToggle = document.getElementById("invModeToggle");
+    if (invNavToggle) invNavToggle.addEventListener("click", () => setInvMode(!invOn));
+    document.addEventListener("keydown", e => { if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "I" || e.key === "i")) { e.preventDefault(); setInvMode(!invOn); } });
+
+    /* reveal the navbar Inventory+ toggle now that JS is ready, then restore preference */
+    document.body.classList.add("dev-ready");
+    let invRestore = "0"; try { invRestore = localStorage.getItem("viq_inv_mode") || "0"; } catch (e) { }
+    syncDevProxies();
+    if (invRestore === "1") setInvMode(true);
   })();
 
 })();
