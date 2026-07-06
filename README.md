@@ -4,8 +4,16 @@ An AI-powered reconditioning & inventory-intelligence demo for used-car dealersh
 Built as a **single, self-contained HTML file** with **zero external dependencies** — it runs
 fully offline and is hosted 24/7 on GitHub Pages.
 
-### 🔗 Live site
-**https://vasanthvaidya.github.io/velocityiq/**
+### 🔗 Live links
+
+| Environment | Branch | URL |
+| ----------- | ------ | --- |
+| **Production** | `main` | **https://vasanthvaidya.github.io/velocityiq/** |
+| **Staging** | `dev` | **https://vasanthvaidya.github.io/velocityiq/dev/** |
+
+Both are live 24/7 and redeploy automatically when you push to their branch, so you can
+develop on `dev` (its own link, shows a **STAGING** badge) without touching the demo your
+manager opens on `main`.
 
 ---
 
@@ -25,7 +33,8 @@ fully offline and is hosted 24/7 on GitHub Pages.
 velocityiq.html      → the entire application (HTML + CSS + JS, one file)
 index.html           → generated at deploy time from velocityiq.html (Pages landing page)
 .github/workflows/
-    deploy.yml       → GitHub Actions: auto-deploys to Pages on every push to main
+    deploy-main.yml  → publishes main → gh-pages root  (production link)
+    deploy-dev.yml   → publishes dev  → gh-pages /dev/  (staging link)
 serve-local.js       → optional local dev server with live-reload (NOT deployed)
 README.md            → this file
 ```
@@ -53,32 +62,49 @@ Editing `velocityiq.html` and saving auto-refreshes the browser.
 
 ---
 
-## 🌐 Deployment (GitHub Pages)
+## 🌐 Deployment (GitHub Pages · two environments)
 
-This repo deploys automatically. **Every push to `main` publishes the live site** via GitHub Actions.
+This repo publishes **two independent live sites** from the **same repo**, using the
+`gh-pages` branch with per-branch subfolders:
+
+| Branch | Deploys to (gh-pages) | Live URL |
+| ------ | --------------------- | -------- |
+| `main` | `/` (root) | https://vasanthvaidya.github.io/velocityiq/ |
+| `dev`  | `/dev/` | https://vasanthvaidya.github.io/velocityiq/dev/ |
 
 **How it works**
 
-1. `.github/workflows/deploy.yml` triggers on push to `main` (or manual `workflow_dispatch`).
-2. It copies `velocityiq.html` to `index.html` (the Pages landing page) into a `_site/` folder and adds `.nojekyll`.
-3. It uploads the artifact and deploys to GitHub Pages.
-4. The site goes live at `https://<username>.github.io/<repo>/`.
+1. Pushing **`main`** runs `deploy-main.yml` → builds `index.html` from `velocityiq.html`
+   and publishes it to the **root** of the `gh-pages` branch (it never touches `/dev`).
+2. Pushing **`dev`** runs `deploy-dev.yml` → publishes to the **`/dev/`** subfolder and
+   stamps a **STAGING** badge on the page.
+3. GitHub serves the `gh-pages` branch, so both URLs stay live 24/7 and each redeploys on
+   its own push — completely independently.
 
-**One-time setup for a fresh fork/clone**
+**One-time setup** (already done for this repo; needed only on a fresh fork):
 
-```bash
-git clone https://github.com/VasanthVaidya/velocityiq.git
-cd velocityiq
-# In GitHub: Settings → Pages → Build and deployment → Source: "GitHub Actions"
-git push origin main        # triggers the first deploy
+```
+GitHub → Settings → Pages → Build and deployment
+  Source: Deploy from a branch
+  Branch: gh-pages   Folder: / (root)   → Save
 ```
 
-**Update the live site**
+**Work on the staging branch**
 
 ```bash
+git checkout dev
+# edit velocityiq.html …
 git add -A
-git commit -m "Update demo"
-git push origin main        # auto-redeploys in ~1–2 minutes
+git commit -m "Try something new"
+git push origin dev         # → redeploys ONLY the /dev/ link in ~1–2 min
+```
+
+**Promote staging to production** when you're happy with it:
+
+```bash
+git checkout main
+git merge dev
+git push origin main        # → redeploys the main link
 ```
 
 Track deploys under the repo's **Actions** tab.

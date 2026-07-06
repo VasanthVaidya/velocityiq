@@ -43,3 +43,9 @@ VelocityIQ-Demo.zip
 VelocityIQ-Demo/
 cloudflared.exe
 PUBLIC-LINK.txt
+
+### Local temp / validation files (never deployed) ###
+_*.txt
+_*.js
+_site/
+
